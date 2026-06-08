@@ -1,0 +1,17 @@
+[package]
+name = "seiche"
+version = "0.0.1"
+edition = "2024"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+crate-type = ["cdylib"]
+
+[workspace]
+members = ["xtask"]
+
+[dependencies]
+atomic_float = "1.1"
+egui = { version = "0.34", default-features = false, features = ["default_fonts"] }
+nice-plug = { git = "https://codeberg.org/RustAudio/nice-plug.git", features = ["assert_process_allocs"] }
+nice-plug-egui = { git = "https://codeberg.org/RustAudio/nice-plug.git", default-features = false, features = ["opengl"] }
