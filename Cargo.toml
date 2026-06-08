@@ -1,14 +1,27 @@
 [package]
 name = "seiche"
-version = "0.0.1"
+version = "0.1.0"
 edition = "2024"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [lib]
 crate-type = ["cdylib"]
 
-[workspace]
-members = ["xtask"]
+# Enable a small amount of optimization in the dev profile.
+[profile.dev]
+opt-level = 1
+
+# Enable more optimization in the release profile at the cost of compile time.
+[profile.release]
+codegen-units = 1
+lto = "thin"
+# (optional) helps reduce binary size
+strip = "symbols"
+
+[profile.profiling]
+inherits = "release"
+debug = true
+strip = "none"
 
 [dependencies]
 atomic_float = "1.1"
