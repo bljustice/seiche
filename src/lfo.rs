@@ -12,7 +12,7 @@ pub struct Lfo {
     pub rate_hz: f32,
     pub waveform: Waveform,
     pub phase: f32,
-    pub random_hold: f32,
+    pub random_value: f32,
     pub rng_state: u32,
 }
 
@@ -23,7 +23,7 @@ impl Lfo {
             rate_hz,
             waveform,
             phase: 0.0,
-            random_hold: 0.0,
+            random_value: 0.0,
             rng_state: 0,
         }
     }
@@ -40,7 +40,7 @@ impl Lfo {
         let value = match self.waveform {
             Waveform::Sine => (self.phase * TAU).sin(),
             Waveform::Square => if self.phase < 0.5 { 1.0 } else { -1.0 },
-            Waveform::Random => self.random_hold * 2.0 - 1.0,
+            Waveform::Random => self.random_value,
         };
         self.update_phase();
         value
@@ -48,18 +48,30 @@ impl Lfo {
 
     pub fn reset(&mut self) {
         self.phase = 0.0;
-        self.random_hold = 0.0;
+        self.random_value = 0.0;
         self.rng_state = 0;
     }
 
     fn update_phase(&mut self) {
-        self.phase += self.rate_hz / self.sample_rate;
-        if self.phase >= 1.0 {
-            self.phase -= 1.0;
+        match self.waveform {
+            Waveform::Random => self.update_random_walk(),
+            _ => {
+                self.phase += self.rate_hz / self.sample_rate;
+                if self.phase >= 1.0 {
+                    self.phase -= 1.0;
+                }
+            }
         }
-        if self.waveform == Waveform::Random {
-            self.random_hold = self.next_random_unit();
-        }
+    }
+
+    fn update_random_walk(&mut self) {
+        let step_scale = (self.rate_hz / self.sample_rate).sqrt() * 0.15;
+        let step = self.next_random_bipolar() * step_scale;
+        self.random_value = (self.random_value + step).clamp(-1.0, 1.0);
+    }
+
+    fn next_random_bipolar(&mut self) -> f32 {
+        self.next_random_unit() * 2.0 - 1.0
     }
 
     fn next_random_unit(&mut self) -> f32 {
