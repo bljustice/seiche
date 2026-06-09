@@ -39,6 +39,14 @@ impl Lfo {
         }
     }
 
+    pub fn set_flip_probability(&mut self, flip_probability: f32) {
+        self.flip_probability = flip_probability;
+    }
+
+    pub fn set_bias(&mut self, bias: f32) {
+        self.bias = bias;
+    }
+
     pub fn set_rate_hz(&mut self, rate_hz: f32) {
         self.rate_hz = rate_hz;
     }

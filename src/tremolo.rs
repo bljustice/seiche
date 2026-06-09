@@ -27,6 +27,8 @@ impl Tremolo {
     pub fn next_modulation(&mut self) -> f32 {
         self.lfo.set_rate_hz(self.params.rate.smoothed.next());
         self.lfo.set_waveform(self.params.lfo.value().into());
+        self.lfo.set_flip_probability(self.params.flip_probability.smoothed.next());
+        self.lfo.set_bias(self.params.bias.smoothed.next());
 
         let lfo_value = self.lfo.next();
         let depth = self.params.depth.smoothed.next();

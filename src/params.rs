@@ -1,5 +1,5 @@
 use nice_plug::prelude::{
-    formatters, util, Enum, EnumParam, FloatParam, FloatRange, Params, SmoothingStyle,
+    formatters, Enum, EnumParam, FloatParam, FloatRange, Params, SmoothingStyle,
 };
 
 use crate::lfo::Waveform;
@@ -32,6 +32,10 @@ pub struct TremoloParams {
     pub rate: FloatParam,
     #[id = "lfo"]
     pub lfo: EnumParam<LfoType>,
+    #[id = "flip_probability"]
+    pub flip_probability: FloatParam,
+    #[id = "bias"]
+    pub bias: FloatParam,
 }
 
 impl TremoloParams {
@@ -58,6 +62,22 @@ impl TremoloParams {
             .with_value_to_string(formatters::v2s_f32_hz_then_khz(2))
             .with_string_to_value(formatters::s2v_f32_hz_then_khz()),
             lfo: EnumParam::new("LFO", LfoType::Sine),
+            flip_probability: FloatParam::new(
+                "Flip Probability",
+                0.3,
+                FloatRange::Linear { min: 0.0, max: 1.0 }
+            )
+            .with_smoother(SmoothingStyle::Linear(50.0))
+            .with_unit(" %")
+            .with_value_to_string(formatters::v2s_f32_percentage(2))
+            .with_string_to_value(formatters::s2v_f32_percentage()),
+            bias: FloatParam::new(
+                "Bias",
+                0.2,
+                FloatRange::Linear { min: -1.0, max: 1.0 }
+            )
+            .with_smoother(SmoothingStyle::Linear(50.0))
+            .with_value_to_string(formatters::v2s_f32_rounded(2))
         }
     }
 }
