@@ -63,7 +63,7 @@ impl Lfo {
         self.update_phase();
         match self.waveform {
             Waveform::Sine => (self.phase * TAU).sin(),
-            Waveform::Square => soft_square(self.phase, self.rate_hz),
+            Waveform::Square => self.soft_square(),
             Waveform::Random => self.random_value,
         }
     }
@@ -89,7 +89,6 @@ impl Lfo {
     }
 
     /// Rate-synced random LFO: pick a new target each cycle, smoothstep between targets.
-    /// Per-sample white noise in the modulator would AM the signal into audible noise.
     fn update_random(&mut self, phase_wrapped: bool) {
         if phase_wrapped {
             self.random_start = self.random_target;
@@ -101,8 +100,6 @@ impl Lfo {
             self.random_start + (self.random_target - self.random_start) * t;
     }
 
-    /// Pick the next hold point using the same step logic as the old random walk:
-    /// ±1 direction, optional flip, plus bias — then step from the current target.
     fn next_random_target(&mut self) -> f32 {
         let mut step = if self.next_random_unit() >= 0.5 { 1.0 } else { -1.0 };
 
@@ -122,6 +119,24 @@ impl Lfo {
             .wrapping_add(1_013_904_223);
         (self.rng_state >> 8) as f32 / 16_777_216.0
     }
+    
+    /// Square LFO with short smooth ramps at the falling edge (0.5) and wrap (1 → 0).
+    fn soft_square(&mut self) -> f32 {
+        // ~2 ms transition, clamped to a sensible fraction of the cycle.
+        let edge = (0.002 * self.rate_hz).clamp(0.003, 0.1);
+    
+        if self.phase < 0.5 - edge {
+            1.0
+        } else if self.phase < 0.5 + edge {
+            let t = (self.phase - (0.5 - edge)) / (2.0 * edge);
+            1.0 - 2.0 * smoothstep(t)
+        } else if self.phase < 1.0 - edge {
+            -1.0
+        } else {
+            let t = (self.phase - (1.0 - edge)) / edge;
+            -1.0 + 2.0 * smoothstep(t)
+        }
+    }
 }
 
 fn smoothstep(t: f32) -> f32 {
@@ -129,20 +144,3 @@ fn smoothstep(t: f32) -> f32 {
     t * t * (3.0 - 2.0 * t)
 }
 
-/// Square LFO with short smooth ramps at the falling edge (0.5) and wrap (1 → 0).
-fn soft_square(phase: f32, rate_hz: f32) -> f32 {
-    // ~2 ms transition, clamped to a sensible fraction of the cycle.
-    let edge = (0.002 * rate_hz).clamp(0.003, 0.1);
-
-    if phase < 0.5 - edge {
-        1.0
-    } else if phase < 0.5 + edge {
-        let t = (phase - (0.5 - edge)) / (2.0 * edge);
-        1.0 - 2.0 * smoothstep(t)
-    } else if phase < 1.0 - edge {
-        -1.0
-    } else {
-        let t = (phase - (1.0 - edge)) / edge;
-        -1.0 + 2.0 * smoothstep(t)
-    }
-}
