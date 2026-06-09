@@ -1,49 +1,16 @@
 use nice_plug::prelude::*;
 use std::sync::Arc;
+use std::sync::atomic::Ordering::{Relaxed};
 
-pub struct MyPlugin {
-    params: Arc<MyPluginParams>,
-}
+mod lfo;
+mod params;
+mod tremolo;
 
-#[derive(Params)]
-struct MyPluginParams {
-    #[id = "gain"]
-    pub gain: FloatParam,
-}
-
-impl Default for MyPluginParams {
-    fn default() -> Self {
-        Self {
-            gain: FloatParam::new(
-                "Gain",
-                util::db_to_gain(0.0),
-                FloatRange::Skewed {
-                    min: util::db_to_gain(-30.0),
-                    max: util::db_to_gain(30.0),
-                    factor: FloatRange::gain_skew_factor(-30.0, 30.0),
-                },
-            )
-            .with_smoother(SmoothingStyle::Logarithmic(50.0))
-            .with_unit(" dB")
-            .with_value_to_string(formatters::v2s_f32_gain_to_db(2))
-            .with_string_to_value(formatters::s2v_f32_gain_to_db()),
-        }
-    }
-}
-
-impl Default for MyPlugin {
-    fn default() -> Self {
-        Self {
-            params: Arc::new(MyPluginParams::default()),
-        }
-    }
-}
-
-impl Plugin for MyPlugin {
-    const NAME: &'static str = "My Plugin";
-    const VENDOR: &'static str = "Moist Plugins GmbH";
-    const URL: &'static str = "https://youtu.be/dQw4w9WgXcQ";
-    const EMAIL: &'static str = "info@example.com";
+impl Plugin for tremolo::Tremolo {
+    const NAME: &'static str = "seiche";
+    const VENDOR: &'static str = "";
+    const URL: &'static str = "";
+    const EMAIL: &'static str = "";
     const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
     const AUDIO_IO_LAYOUTS: &'static [AudioIOLayout] = &[
@@ -67,6 +34,21 @@ impl Plugin for MyPlugin {
     type SysExMessage = ();
     type BackgroundTask = ();
 
+    fn initialize(
+        &mut self,
+        _audio_io_layout: &AudioIOLayout,
+        buffer_config: &BufferConfig,
+        _context: &mut impl InitContext<Self>,
+    ) -> bool {
+        self.sample_rate.store(buffer_config.sample_rate, Relaxed);
+        self.lfo.sample_rate = buffer_config.sample_rate;
+        true
+    }
+
+    fn reset(&mut self) {
+        self.lfo.reset();
+    }
+
     fn params(&self) -> Arc<dyn Params> {
         self.params.clone()
     }
@@ -78,35 +60,32 @@ impl Plugin for MyPlugin {
         _context: &mut impl ProcessContext<Self>,
     ) -> ProcessStatus {
         for channel_samples in buffer.iter_samples() {
-            let gain = self.params.gain.smoothed.next();
-
+            let modulation = self.next_modulation();
             for sample in channel_samples {
-                *sample *= gain;
+                *sample = self.apply_modulation(*sample, modulation);
             }
         }
-
         ProcessStatus::Normal
     }
-
-    fn deactivate(&mut self) {}
 }
 
-impl ClapPlugin for MyPlugin {
-    const CLAP_ID: &'static str = "com.moist-plugins-gmbh.seiche";
+impl ClapPlugin for tremolo::Tremolo {
+    const CLAP_ID: &'static str = "info.bjustice.seiche";
     const CLAP_DESCRIPTION: Option<&'static str> = Some("Seiche");
     const CLAP_MANUAL_URL: Option<&'static str> = Some(Self::URL);
     const CLAP_SUPPORT_URL: Option<&'static str> = None;
     const CLAP_FEATURES: &'static [ClapFeature] = &[
         ClapFeature::AudioEffect,
         ClapFeature::Stereo,
+        ClapFeature::Mono,
     ];
 }
 
-impl Vst3Plugin for MyPlugin {
-    const VST3_CLASS_ID: [u8; 16] = *b"MyMoistPlugin001";
+impl Vst3Plugin for tremolo::Tremolo {
+    const VST3_CLASS_ID: [u8; 16] = *b"seicheeeeeeeeeee";
     const VST3_SUBCATEGORIES: &'static [Vst3SubCategory] =
-        &[Vst3SubCategory::Fx, Vst3SubCategory::Tools];
+        &[Vst3SubCategory::Fx];
 }
 
-nice_export_clap!(MyPlugin);
-nice_export_vst3!(MyPlugin);
+nice_export_clap!(tremolo::Tremolo);
+nice_export_vst3!(tremolo::Tremolo);
