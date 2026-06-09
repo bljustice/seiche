@@ -63,7 +63,7 @@ impl Lfo {
         self.update_phase();
         match self.waveform {
             Waveform::Sine => (self.phase * TAU).sin(),
-            Waveform::Square => if self.phase < 0.5 { 1.0 } else { -1.0 },
+            Waveform::Square => soft_square(self.phase, self.rate_hz),
             Waveform::Random => self.random_value,
         }
     }
@@ -127,4 +127,22 @@ impl Lfo {
 fn smoothstep(t: f32) -> f32 {
     let t = t.clamp(0.0, 1.0);
     t * t * (3.0 - 2.0 * t)
+}
+
+/// Square LFO with short smooth ramps at the falling edge (0.5) and wrap (1 → 0).
+fn soft_square(phase: f32, rate_hz: f32) -> f32 {
+    // ~2 ms transition, clamped to a sensible fraction of the cycle.
+    let edge = (0.002 * rate_hz).clamp(0.003, 0.1);
+
+    if phase < 0.5 - edge {
+        1.0
+    } else if phase < 0.5 + edge {
+        let t = (phase - (0.5 - edge)) / (2.0 * edge);
+        1.0 - 2.0 * smoothstep(t)
+    } else if phase < 1.0 - edge {
+        -1.0
+    } else {
+        let t = (phase - (1.0 - edge)) / edge;
+        -1.0 + 2.0 * smoothstep(t)
+    }
 }
