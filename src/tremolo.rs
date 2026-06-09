@@ -39,7 +39,7 @@ impl Tremolo {
         tremolo_depth
     }
 
-    pub fn apply_modulation(&self, input: f32, modulation: f32) -> f32 {
-        input * modulation
+    pub fn apply_modulation(&self, sample: f32, modulation: f32) -> f32 {
+        sample * modulation
     }
 }
