@@ -5,6 +5,7 @@ pub enum Waveform {
     Sine,
     Square,
     Random,
+    Ramp,
 }
 
 pub struct Lfo {
@@ -65,6 +66,7 @@ impl Lfo {
             Waveform::Sine => (self.phase * TAU).sin(),
             Waveform::Square => self.soft_square(),
             Waveform::Random => self.random_value,
+            Waveform::Ramp => self.soft_ramp(),
         }
     }
 
@@ -119,7 +121,7 @@ impl Lfo {
             .wrapping_add(1_013_904_223);
         (self.rng_state >> 8) as f32 / 16_777_216.0
     }
-    
+
     /// Square LFO with short smooth ramps at the falling edge (0.5) and wrap (1 → 0).
     fn soft_square(&mut self) -> f32 {
         // ~2 ms transition, clamped to a sensible fraction of the cycle.
@@ -137,7 +139,28 @@ impl Lfo {
             -1.0 + 2.0 * smoothstep(t)
         }
     }
+    
+    /// Falling ramp in [-1, 1]: starts at +1 (full volume), drops to -1 (deepest dip).
+    /// Unipolar ramp 0 → 1 with eased start/end so the wrap back to 0 is continuous.
+    fn soft_ramp(&mut self) -> f32 {
+        let edge = (0.002 * self.rate_hz).clamp(0.003, 0.1);
+    
+        let smoothed_value = if self.phase < edge {
+            let t = self.phase / edge;
+            smoothstep(t) * (edge / (1.0 - edge))
+        } else if self.phase < 1.0 - edge {
+            self.phase / (1.0 - edge)
+        } else {
+            let t = (self.phase - (1.0 - edge)) / edge;
+            1.0 - smoothstep(t)
+        };
+
+        smoothed_value
+    }
 }
+
+
+
 
 fn smoothstep(t: f32) -> f32 {
     let t = t.clamp(0.0, 1.0);

@@ -12,6 +12,8 @@ pub enum LfoType {
     Square,
     #[id = "random"]
     Random,
+    #[id = "ramp"]
+    Ramp,
 }
 
 impl From<LfoType> for Waveform {
@@ -20,6 +22,7 @@ impl From<LfoType> for Waveform {
             LfoType::Sine => Waveform::Sine,
             LfoType::Square => Waveform::Square,
             LfoType::Random => Waveform::Random,
+            LfoType::Ramp => Waveform::Ramp,
         }
     }
 }
