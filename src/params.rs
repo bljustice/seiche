@@ -48,7 +48,7 @@ impl TremoloParams {
             .with_string_to_value(formatters::s2v_f32_percentage()),
             rate: FloatParam::new(
                 "Rate",
-                600.0,
+                4.0,
                 FloatRange::Skewed {
                     min: 0.01,
                     max: 32.0,

@@ -15,7 +15,7 @@ impl Default for Tremolo {
         let sample_rate = Arc::new(AtomicF32::new(44100.0));
         Self {
             params: Arc::new(TremoloParams::new()),
-            lfo: Lfo::new(sample_rate.load(Relaxed), 600.0, Waveform::Sine),
+            lfo: Lfo::new(sample_rate.load(Relaxed), 4.0, Waveform::Sine),
             sample_rate,
         }
     }
