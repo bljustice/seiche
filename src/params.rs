@@ -16,6 +16,14 @@ pub enum LfoType {
     Ramp,
 }
 
+#[derive(Enum, PartialEq, Debug)]
+pub enum TremoloMode {
+    #[id = "classic"]
+    Classic,
+    #[id = "harmonic"]
+    Harmonic,
+}
+
 impl From<LfoType> for Waveform {
     fn from(t: LfoType) -> Self {
         match t {
@@ -29,6 +37,8 @@ impl From<LfoType> for Waveform {
 
 #[derive(Params)]
 pub struct TremoloParams {
+    #[id = "mode"]
+    pub mode: EnumParam<TremoloMode>,
     #[id = "depth"] 
     pub depth: FloatParam,
     #[id = "rate"]
@@ -44,6 +54,7 @@ pub struct TremoloParams {
 impl TremoloParams {
     pub fn new() -> Self {
         Self {
+            mode: EnumParam::new("Mode", TremoloMode::Classic),
             depth: FloatParam::new(
                 "Depth",
                 0.5,

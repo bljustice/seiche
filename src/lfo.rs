@@ -59,15 +59,20 @@ impl Lfo {
         }
         self.waveform = waveform;
     }
-
-    pub fn next(&mut self) -> f32 {
-        self.update_phase();
+    
+    pub fn waveform_at(&self, mut phase: f32) -> f32 {
+        phase -= phase.floor(); // wrap to [0, 1)
         match self.waveform {
-            Waveform::Sine => (self.phase * TAU).sin(),
-            Waveform::Square => self.soft_square(),
-            Waveform::Random => self.random_value,
-            Waveform::Ramp => self.soft_ramp(),
+            Waveform::Sine => (phase * TAU).sin(),
+            Waveform::Square => soft_square(phase, self.rate_hz),
+            Waveform::Random => self.random_at_phase(phase),
+            Waveform::Ramp => soft_ramp(phase, self.rate_hz),
         }
+    }
+
+    fn random_at_phase(&self, phase: f32) -> f32 {
+        let t = smoothstep(phase);
+        self.random_start + (self.random_target - self.random_start) * t
     }
 
     pub fn reset(&mut self) {
@@ -78,7 +83,7 @@ impl Lfo {
         self.rng_state = 1;
     }
 
-    fn update_phase(&mut self) {
+    pub fn update_phase(&mut self) {
         self.phase += self.rate_hz / self.sample_rate;
         let phase_wrapped = self.phase >= 1.0;
         if phase_wrapped {
@@ -121,42 +126,37 @@ impl Lfo {
             .wrapping_add(1_013_904_223);
         (self.rng_state >> 8) as f32 / 16_777_216.0
     }
+}
 
-    /// Square LFO with short smooth ramps at the falling edge (0.5) and wrap (1 → 0).
-    fn soft_square(&mut self) -> f32 {
-        // ~2 ms transition, clamped to a sensible fraction of the cycle.
-        let edge = (0.002 * self.rate_hz).clamp(0.003, 0.1);
-    
-        if self.phase < 0.5 - edge {
-            1.0
-        } else if self.phase < 0.5 + edge {
-            let t = (self.phase - (0.5 - edge)) / (2.0 * edge);
-            1.0 - 2.0 * smoothstep(t)
-        } else if self.phase < 1.0 - edge {
-            -1.0
-        } else {
-            let t = (self.phase - (1.0 - edge)) / edge;
-            -1.0 + 2.0 * smoothstep(t)
-        }
-    }
-    
-    /// Falling ramp in [-1, 1]: starts at +1 (full volume), drops to -1 (deepest dip).
-    /// Unipolar ramp 0 → 1 with eased start/end so the wrap back to 0 is continuous.
-    fn soft_ramp(&mut self) -> f32 {
-        let edge = (0.002 * self.rate_hz).clamp(0.003, 0.1);
-    
-        let smoothed_value = if self.phase < edge {
-            let t = self.phase / edge;
-            smoothstep(t) * (edge / (1.0 - edge))
-        } else if self.phase < 1.0 - edge {
-            self.phase / (1.0 - edge)
-        } else {
-            let t = (self.phase - (1.0 - edge)) / edge;
-            1.0 - smoothstep(t)
-        };
+fn soft_square(phase: f32, rate_hz: f32) -> f32 {
+    let edge = (0.002 * rate_hz).clamp(0.003, 0.1);
 
-        smoothed_value
+    if phase < 0.5 - edge {
+        1.0
+    } else if phase < 0.5 + edge {
+        let t = (phase - (0.5 - edge)) / (2.0 * edge);
+        1.0 - 2.0 * smoothstep(t)
+    } else if phase < 1.0 - edge {
+        -1.0
+    } else {
+        let t = (phase - (1.0 - edge)) / edge;
+        -1.0 + 2.0 * smoothstep(t)
     }
+}
+
+fn soft_ramp(phase: f32, rate_hz: f32) -> f32 {
+    let edge = (0.002 * rate_hz).clamp(0.003, 0.1);
+    let unipolar = if phase < edge {
+        let t = phase / edge;
+        smoothstep(t) * (edge / (1.0 - edge))
+    } else if phase < 1.0 - edge {
+        phase / (1.0 - edge)
+    } else {
+        let t = (phase - (1.0 - edge)) / edge;
+        1.0 - smoothstep(t)
+    };
+
+    1.0 - 2.0 * unipolar.powf(2.5)
 }
 
 
