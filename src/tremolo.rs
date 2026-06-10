@@ -33,7 +33,7 @@ impl Tremolo {
         let lfo_value = self.lfo.next();
         let depth = self.params.depth.smoothed.next();
 
-        let mod_amount = (lfo_value + 1.0) * 0.5;
+        let mod_amount = (lfo_value + 1.0) * 0.5; // map [-1, 1] to [0, 1]
         let tremolo_depth = 1.0 - depth + depth * mod_amount;
 
         tremolo_depth
