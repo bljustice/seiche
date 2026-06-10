@@ -75,6 +75,15 @@ impl Plugin for tremolo::Tremolo {
         _context: &mut impl ProcessContext<Self>,
     ) -> ProcessStatus {
         for channel_samples in buffer.iter_samples() {
+
+            if self.params.crossover_frequency.smoothed.is_smoothing() {
+                let crossover_frequency = self.params.crossover_frequency.smoothed.next();
+                for lpf in &mut self.lpf {
+                    lpf.coefficients
+                        .update(crossover_frequency, self.sample_rate.load(Relaxed), FilterType::Lowpass);
+                }
+            }
+
             let (gain_low, gain_high) = self.next_modulation();
             for (channel, sample) in channel_samples.into_iter().enumerate() {
                 *sample = match self.params.mode.value() {

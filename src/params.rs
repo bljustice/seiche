@@ -49,6 +49,8 @@ pub struct TremoloParams {
     pub flip_probability: FloatParam,
     #[id = "bias"]
     pub bias: FloatParam,
+    #[id = "crossover_frequency"]
+    pub crossover_frequency: FloatParam,
 }
 
 impl TremoloParams {
@@ -91,7 +93,14 @@ impl TremoloParams {
                 FloatRange::Linear { min: -1.0, max: 1.0 }
             )
             .with_smoother(SmoothingStyle::Linear(50.0))
-            .with_value_to_string(formatters::v2s_f32_rounded(2))
+            .with_value_to_string(formatters::v2s_f32_rounded(2)),
+            crossover_frequency: FloatParam::new(
+                "Crossover Frequency",
+                4000.0,
+                FloatRange::Linear { min: 10.0, max: 20000.0 }
+            )
+            .with_value_to_string(formatters::v2s_f32_hz_then_khz(2))
+            .with_string_to_value(formatters::s2v_f32_hz_then_khz()),
         }
     }
 }
