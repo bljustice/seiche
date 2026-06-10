@@ -159,11 +159,7 @@ fn soft_ramp(phase: f32, rate_hz: f32) -> f32 {
     1.0 - 2.0 * unipolar.powf(2.5)
 }
 
-
-
-
 fn smoothstep(t: f32) -> f32 {
     let t = t.clamp(0.0, 1.0);
     t * t * (3.0 - 2.0 * t)
 }
-
