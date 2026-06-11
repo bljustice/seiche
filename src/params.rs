@@ -1,6 +1,6 @@
-use nice_plug::prelude::{
-    formatters, Enum, EnumParam, FloatParam, FloatRange, Params, SmoothingStyle,
-};
+use nice_plug::{prelude::{
+    Enum, EnumParam, FloatParam, FloatRange, Params, SmoothingStyle, formatters
+}};
 
 use crate::lfo::Waveform;
 
@@ -16,6 +16,14 @@ pub enum LfoType {
     Ramp,
 }
 
+#[derive(Enum, PartialEq, Debug)]
+pub enum TremoloMode {
+    #[id = "classic"]
+    Classic,
+    #[id = "harmonic"]
+    Harmonic,
+}
+
 impl From<LfoType> for Waveform {
     fn from(t: LfoType) -> Self {
         match t {
@@ -29,6 +37,8 @@ impl From<LfoType> for Waveform {
 
 #[derive(Params)]
 pub struct TremoloParams {
+    #[id = "mode"]
+    pub mode: EnumParam<TremoloMode>,
     #[id = "depth"] 
     pub depth: FloatParam,
     #[id = "rate"]
@@ -39,11 +49,14 @@ pub struct TremoloParams {
     pub flip_probability: FloatParam,
     #[id = "bias"]
     pub bias: FloatParam,
+    #[id = "crossover_frequency"]
+    pub crossover_frequency: FloatParam,
 }
 
 impl TremoloParams {
     pub fn new() -> Self {
         Self {
+            mode: EnumParam::new("Mode", TremoloMode::Classic),
             depth: FloatParam::new(
                 "Depth",
                 0.5,
@@ -80,7 +93,19 @@ impl TremoloParams {
                 FloatRange::Linear { min: -1.0, max: 1.0 }
             )
             .with_smoother(SmoothingStyle::Linear(50.0))
-            .with_value_to_string(formatters::v2s_f32_rounded(2))
+            .with_value_to_string(formatters::v2s_f32_rounded(2)),
+            crossover_frequency: FloatParam::new(
+                "Crossover Frequency",
+                400.0,
+                FloatRange::Skewed {
+                    min: 5.0,
+                    max: 20_000.0,
+                    factor: FloatRange::skew_factor(-2.0),
+                },
+            )
+            .with_smoother(SmoothingStyle::Logarithmic(100.0))
+            .with_value_to_string(formatters::v2s_f32_hz_then_khz(2))
+            .with_string_to_value(formatters::s2v_f32_hz_then_khz()),
         }
     }
 }

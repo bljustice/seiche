@@ -2,9 +2,13 @@ use nice_plug::prelude::*;
 use std::sync::Arc;
 use std::sync::atomic::Ordering::{Relaxed};
 
+use crossover::FilterType;
+use params::TremoloMode;
+
 mod lfo;
 mod params;
 mod tremolo;
+mod crossover;
 
 impl Plugin for tremolo::Tremolo {
     const NAME: &'static str = "seiche";
@@ -42,11 +46,21 @@ impl Plugin for tremolo::Tremolo {
     ) -> bool {
         self.sample_rate.store(buffer_config.sample_rate, Relaxed);
         self.lfo.sample_rate = buffer_config.sample_rate;
+        for lpf in &mut self.lpf {
+            lpf.coefficients
+                .update(400.0, buffer_config.sample_rate, FilterType::Lowpass);
+        }
         true
     }
 
     fn reset(&mut self) {
         self.lfo.reset();
+        let sample_rate = self.sample_rate.load(Relaxed);
+        for lpf in &mut self.lpf {
+            lpf.reset_state();
+            lpf.coefficients
+                .update(400.0, sample_rate, FilterType::Lowpass);
+        }
     }
 
     fn params(&self) -> Arc<dyn Params> {
@@ -60,9 +74,23 @@ impl Plugin for tremolo::Tremolo {
         _context: &mut impl ProcessContext<Self>,
     ) -> ProcessStatus {
         for channel_samples in buffer.iter_samples() {
-            let modulation = self.next_modulation();
-            for sample in channel_samples {
-                *sample = self.apply_modulation(*sample, modulation);
+
+            if self.params.crossover_frequency.smoothed.is_smoothing() {
+                let crossover_frequency = self.params.crossover_frequency.smoothed.next();
+                for lpf in &mut self.lpf {
+                    lpf.coefficients
+                        .update(crossover_frequency, self.sample_rate.load(Relaxed), FilterType::Lowpass);
+                }
+            }
+
+            let (gain_low, gain_high) = self.next_modulation();
+            for (channel, sample) in channel_samples.into_iter().enumerate() {
+                *sample = match self.params.mode.value() {
+                    TremoloMode::Classic => self.apply_classic(*sample, gain_low),
+                    TremoloMode::Harmonic => {
+                        self.apply_harmonic(*sample, gain_low, gain_high, channel)
+                    }
+                };
             }
         }
         ProcessStatus::Normal
