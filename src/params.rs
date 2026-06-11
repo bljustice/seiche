@@ -1,6 +1,6 @@
-use nice_plug::prelude::{
-    formatters, Enum, EnumParam, FloatParam, FloatRange, Params, SmoothingStyle,
-};
+use nice_plug::{prelude::{
+    Enum, EnumParam, FloatParam, FloatRange, Params, SmoothingStyle, formatters
+}};
 
 use crate::lfo::Waveform;
 
@@ -96,9 +96,14 @@ impl TremoloParams {
             .with_value_to_string(formatters::v2s_f32_rounded(2)),
             crossover_frequency: FloatParam::new(
                 "Crossover Frequency",
-                4000.0,
-                FloatRange::Linear { min: 10.0, max: 20000.0 }
+                400.0,
+                FloatRange::Skewed {
+                    min: 5.0,
+                    max: 20_000.0,
+                    factor: FloatRange::skew_factor(-2.0),
+                },
             )
+            .with_smoother(SmoothingStyle::Logarithmic(100.0))
             .with_value_to_string(formatters::v2s_f32_hz_then_khz(2))
             .with_string_to_value(formatters::s2v_f32_hz_then_khz()),
         }

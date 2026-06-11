@@ -26,7 +26,7 @@ impl Default for Tremolo {
 
 impl Tremolo {
     fn modulation_gain(lfo_value: f32, depth: f32) -> f32 {
-        let mod_amount = (lfo_value + 1.0) * 0.5;
+        let mod_amount = (lfo_value + 1.0) * 0.5; // maps lfo_value from [0..1]
         1.0 - depth + depth * mod_amount
     }
 

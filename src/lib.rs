@@ -46,10 +46,9 @@ impl Plugin for tremolo::Tremolo {
     ) -> bool {
         self.sample_rate.store(buffer_config.sample_rate, Relaxed);
         self.lfo.sample_rate = buffer_config.sample_rate;
-        let frequency_cutoff = 400.0;
         for lpf in &mut self.lpf {
             lpf.coefficients
-                .update(frequency_cutoff, buffer_config.sample_rate, FilterType::Lowpass);
+                .update(400.0, buffer_config.sample_rate, FilterType::Lowpass);
         }
         true
     }
