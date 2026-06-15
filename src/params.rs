@@ -35,6 +35,43 @@ impl From<LfoType> for Waveform {
     }
 }
 
+#[derive(Enum, PartialEq, Debug)]
+pub enum RateMode {
+    #[id = "free"]
+    Free,
+    #[id = "sync"]
+    Sync,
+}
+
+#[derive(Enum, PartialEq, Debug)]
+pub enum SyncDivision {
+    #[id = "1/1"]
+    Whole,
+    #[id = "1/2"]
+    Half,
+    #[id = "1/4"]
+    Quarter,
+    #[id = "1/8"]
+    Eighth,
+    #[id = "1/16"]
+    Sixteenth,
+    #[id = "1/32"]  
+    ThirtySecond,
+}
+
+impl SyncDivision {
+    pub fn beats_per_cycle(self) -> f32 {
+        match self {
+            Self::Whole => 4.0,
+            Self::Half => 2.0,
+            Self::Quarter => 1.0,
+            Self::Eighth => 0.5,
+            Self::Sixteenth => 0.25,
+            Self::ThirtySecond => 0.125,
+        }
+    }
+}
+
 #[derive(Params)]
 pub struct TremoloParams {
     #[id = "mode"]
@@ -51,6 +88,10 @@ pub struct TremoloParams {
     pub bias: FloatParam,
     #[id = "crossover_frequency"]
     pub crossover_frequency: FloatParam,
+    #[id = "rate_mode"]
+    pub rate_mode: EnumParam<RateMode>,
+    #[id = "sync_division"]
+    pub sync_division: EnumParam<SyncDivision>,
 }
 
 impl TremoloParams {
@@ -106,6 +147,8 @@ impl TremoloParams {
             .with_smoother(SmoothingStyle::Logarithmic(100.0))
             .with_value_to_string(formatters::v2s_f32_hz_then_khz(2))
             .with_string_to_value(formatters::s2v_f32_hz_then_khz()),
+            rate_mode: EnumParam::new("Rate Mode", RateMode::Free),
+            sync_division: EnumParam::new("Sync Division", SyncDivision::Quarter),
         }
     }
 }

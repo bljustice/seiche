@@ -73,8 +73,13 @@ impl Plugin for tremolo::Tremolo {
         _aux: &mut AuxiliaryBuffers,
         _context: &mut impl ProcessContext<Self>,
     ) -> ProcessStatus {
-        for channel_samples in buffer.iter_samples() {
+        // Update the tempo from the transport if it's available
+        let transport = _context.transport();
+        if let Some(tempo) = transport.tempo {
+            self.tempo.store(tempo as f32, Relaxed);
+        }
 
+        for channel_samples in buffer.iter_samples() {
             if self.params.crossover_frequency.smoothed.is_smoothing() {
                 let crossover_frequency = self.params.crossover_frequency.smoothed.next();
                 for lpf in &mut self.lpf {
