@@ -21,6 +21,10 @@ pub struct Lfo {
     pub flip_probability: f32,
     /// Constant drift added to each step before it becomes the next target.
     pub bias: f32,
+    /// How much the LFO swing varies per cycle, 0 = off.
+    pub jitter_amount: f32,
+    jitter_start: f32,
+    jitter_target: f32,
     pub rng_state: u32,
 }
 
@@ -36,6 +40,9 @@ impl Lfo {
             random_target: 0.0,
             flip_probability: 0.3,
             bias: 0.2,
+            jitter_amount: 0.0,
+            jitter_start: 1.0,
+            jitter_target: 1.0,
             rng_state: 1,
         }
     }
@@ -50,6 +57,11 @@ impl Lfo {
 
     pub fn set_rate_hz(&mut self, rate_hz: f32) {
         self.rate_hz = rate_hz;
+    }
+
+    // Clamp jitter_amount to 0-1
+    pub fn set_jitter_amount(&mut self, jitter_amount: f32) {
+        self.jitter_amount = jitter_amount.clamp(0.0, 1.0);
     }
 
     pub fn set_waveform(&mut self, waveform: Waveform) {
@@ -70,9 +82,23 @@ impl Lfo {
         }
     }
 
+    /// Waveform scaled by the current per-cycle jitter amount.
+    pub fn value_at(&self, phase: f32) -> f32 {
+        self.waveform_at(phase) * self.jitter_scale()
+    }
+
+    fn jitter_scale(&self) -> f32 {
+        if self.jitter_amount <= 0.0 {
+            return 1.0;
+        }
+
+        let t = smoothstep(self.phase);
+        lerp(self.jitter_start, self.jitter_target, t)
+    }
+
     fn random_at_phase(&self, phase: f32) -> f32 {
         let t = smoothstep(phase);
-        self.random_start + (self.random_target - self.random_start) * t
+        lerp(self.random_start, self.random_target, t)
     }
 
     pub fn reset(&mut self) {
@@ -80,6 +106,8 @@ impl Lfo {
         self.random_value = 0.0;
         self.random_start = 0.0;
         self.random_target = 0.0;
+        self.jitter_start = 1.0;
+        self.jitter_target = 1.0;
         self.rng_state = 1;
     }
 
@@ -88,11 +116,27 @@ impl Lfo {
         let phase_wrapped = self.phase >= 1.0;
         if phase_wrapped {
             self.phase -= 1.0;
+            self.advance_jitter();
         }
 
         if self.waveform == Waveform::Random {
             self.update_random(phase_wrapped);
         }
+    }
+
+    fn advance_jitter(&mut self) {
+        if self.jitter_amount <= 0.0 {
+            self.jitter_start = 1.0;
+            self.jitter_target = 1.0;
+            return;
+        }
+
+        self.jitter_start = self.jitter_target;
+        self.jitter_target = self.next_jitter_scale();
+    }
+
+    fn next_jitter_scale(&mut self) -> f32 {
+        1.0 + self.jitter_amount * (2.0 * self.next_random_unit() - 1.0)
     }
 
     /// Rate-synced random LFO: pick a new target each cycle, smoothstep between targets.
@@ -103,8 +147,7 @@ impl Lfo {
         }
 
         let t = smoothstep(self.phase);
-        self.random_value =
-            self.random_start + (self.random_target - self.random_start) * t;
+        self.random_value = lerp(self.random_start, self.random_target, t);
     }
 
     fn next_random_target(&mut self) -> f32 {
@@ -162,4 +205,8 @@ fn soft_ramp(phase: f32, rate_hz: f32) -> f32 {
 fn smoothstep(t: f32) -> f32 {
     let t = t.clamp(0.0, 1.0);
     t * t * (3.0 - 2.0 * t)
+}
+
+fn lerp(a: f32, b: f32, t: f32) -> f32 {
+    a + (b - a) * t
 }

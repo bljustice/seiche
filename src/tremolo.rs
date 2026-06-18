@@ -53,22 +53,22 @@ impl Tremolo {
         self.lfo.set_waveform(self.params.lfo.value().into());
         self.lfo.set_flip_probability(self.params.flip_probability.smoothed.next());
         self.lfo.set_bias(self.params.bias.smoothed.next());
-        
-        self.lfo.update_phase();
-        let depth = self.params.depth.smoothed.next();
-        
-        // Set the rate based on the rate mode and sync division
+        self.lfo.set_jitter_amount(self.params.jitter.smoothed.next());
+
         let free_rate = self.params.rate.smoothed.next();
         self.lfo.set_rate_hz(self.set_rate_hz(free_rate));
 
+        self.lfo.update_phase();
+        let depth = self.params.depth.smoothed.next();
+
         match self.params.mode.value() {
             TremoloMode::Classic => {
-                let gain = Self::modulation_gain(self.lfo.waveform_at(self.lfo.phase), depth);
+                let gain = Self::modulation_gain(self.lfo.value_at(self.lfo.phase), depth);
                 (gain, 0.0)
             }
             TremoloMode::Harmonic => {
-                let lfo_low = self.lfo.waveform_at(self.lfo.phase);
-                let lfo_high = self.lfo.waveform_at(self.lfo.phase + 0.5);
+                let lfo_low = self.lfo.value_at(self.lfo.phase);
+                let lfo_high = self.lfo.value_at(self.lfo.phase + 0.5);
                 (
                     Self::modulation_gain(lfo_low, depth),
                     Self::modulation_gain(lfo_high, depth),
