@@ -5,6 +5,7 @@ use std::sync::atomic::Ordering::{Relaxed};
 use crossover::FilterType;
 use params::TremoloMode;
 
+mod editor;
 mod lfo;
 mod params;
 mod tremolo;

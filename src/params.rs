@@ -1,7 +1,9 @@
 use nice_plug::{prelude::{
     Enum, EnumParam, FloatParam, FloatRange, Params, SmoothingStyle, formatters
 }};
-
+use std::sync::Arc;
+use nice_plug_egui::EguiState;
+use crate::editor;
 use crate::lfo::Waveform;
 
 #[derive(Enum, PartialEq, Debug)]
@@ -74,6 +76,8 @@ impl SyncDivision {
 
 #[derive(Params)]
 pub struct TremoloParams {
+    #[persist = "editor-state"]
+    pub editor_state: Arc<EguiState>,
     #[id = "mode"]
     pub mode: EnumParam<TremoloMode>,
     #[id = "depth"] 
@@ -99,6 +103,7 @@ pub struct TremoloParams {
 impl TremoloParams {
     pub fn new() -> Self {
         Self {
+            editor_state: editor::default_state(),
             mode: EnumParam::new("Mode", TremoloMode::Classic),
             depth: FloatParam::new(
                 "Depth",
