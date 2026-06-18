@@ -64,6 +64,13 @@ impl Plugin for tremolo::Tremolo {
         }
     }
 
+    fn editor(&mut self, _async_executor: AsyncExecutor<Self>) -> Option<Box<dyn Editor>> {
+        editor::create(
+            self.params.clone(),
+            self.params.editor_state.clone(),
+        )
+    }
+
     fn params(&self) -> Arc<dyn Params> {
         self.params.clone()
     }
