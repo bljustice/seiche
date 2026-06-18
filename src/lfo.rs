@@ -59,6 +59,7 @@ impl Lfo {
         self.rate_hz = rate_hz;
     }
 
+    // Clamp jitter_amount to 0-1
     pub fn set_jitter_amount(&mut self, jitter_amount: f32) {
         self.jitter_amount = jitter_amount.clamp(0.0, 1.0);
     }
@@ -92,13 +93,12 @@ impl Lfo {
         }
 
         let t = smoothstep(self.phase);
-        // lerp between jitter_start and jitter_target
-        self.jitter_start + (self.jitter_target - self.jitter_start) * t
+        lerp(self.jitter_start, self.jitter_target, t)
     }
 
     fn random_at_phase(&self, phase: f32) -> f32 {
         let t = smoothstep(phase);
-        self.random_start + (self.random_target - self.random_start) * t
+        lerp(self.random_start, self.random_target, t)
     }
 
     pub fn reset(&mut self) {
@@ -147,8 +147,7 @@ impl Lfo {
         }
 
         let t = smoothstep(self.phase);
-        self.random_value =
-            self.random_start + (self.random_target - self.random_start) * t;
+        self.random_value = lerp(self.random_start, self.random_target, t);
     }
 
     fn next_random_target(&mut self) -> f32 {
@@ -206,4 +205,8 @@ fn soft_ramp(phase: f32, rate_hz: f32) -> f32 {
 fn smoothstep(t: f32) -> f32 {
     let t = t.clamp(0.0, 1.0);
     t * t * (3.0 - 2.0 * t)
+}
+
+fn lerp(a: f32, b: f32, t: f32) -> f32 {
+    a + (b - a) * t
 }
