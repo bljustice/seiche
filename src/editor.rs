@@ -5,7 +5,7 @@ use std::sync::Arc;
 
 use crate::gui::knob::ParamKnob;
 use crate::gui::lfo_icon::lfo_type_combo;
-use crate::params::{TremoloMode, TremoloParams};
+use crate::params::{TremoloMode, RateMode, TremoloParams};
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 const PLUGIN_WIDTH: f32 = 600.0;
@@ -84,7 +84,23 @@ pub(crate) fn create(params: Arc<TremoloParams>, editor_state: Arc<EguiState>) -
 
                     ui.vertical(|ui| {
                         ui.add(ParamKnob::for_param(&params.depth, setter));
-                        ui.add(ParamKnob::for_param(&params.rate, setter));
+                        ui.horizontal(|ui| {
+                            let rate_mode = params.rate_mode.value();
+                            if ui.radio(rate_mode == RateMode::Free, "Free").clicked() {
+                                setter.begin_set_parameter(&params.rate_mode);
+                                setter.set_parameter(&params.rate_mode, RateMode::Free);
+                                setter.end_set_parameter(&params.rate_mode);
+                            }
+                            if ui.radio(rate_mode == RateMode::Sync, "Sync").clicked() {
+                                setter.begin_set_parameter(&params.rate_mode);
+                                setter.set_parameter(&params.rate_mode, RateMode::Sync);
+                            }
+                        });
+                        if params.rate_mode.value() == RateMode::Sync {
+                            ui.add(ParamKnob::for_param(&params.sync_division, setter).with_label("Rate".to_string()));
+                        } else {
+                            ui.add(ParamKnob::for_param(&params.rate, setter));
+                        }
                         lfo_type_combo(ui, &params.lfo, setter);
                     });
                 });
