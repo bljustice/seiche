@@ -10,8 +10,7 @@ const ARC_SWEEP: f32 = 0.75 * TAU; // 270° (3/4 turn)
 const DRAG_SENSITIVITY: f32 = 0.004;
 
 /// Minimal arc knob for nice-plug parameters. The track is a light arc; the value is
-/// drawn as a black arc from the start angle up to the current value.
-#[must_use = "You should put this widget in an ui with `ui.add(widget);`"]
+/// drawn as a black arc from the start angle up to the current value
 pub struct ParamKnob<'a, P: Param> {
     param: &'a P,
     setter: &'a ParamSetter<'a>,
