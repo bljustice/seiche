@@ -7,7 +7,8 @@ use nice_plug::prelude::{Param, ParamSetter};
 
 const ARC_START: f32 = 2.356_194_5; // 135°
 const ARC_SWEEP: f32 = 0.75 * TAU; // 270° (3/4 turn)
-const DRAG_SENSITIVITY: f32 = 0.004;
+const CONTINUOUS_DRAG_SENSITIVITY: f32 = 0.004;
+const DISCRETE_DRAG_THRESHOLD: f32 = 6.0;
 
 /// Minimal arc knob for nice-plug parameters. The track is a light arc; the value is
 /// drawn as a black arc from the start angle up to the current value
@@ -63,11 +64,18 @@ impl<'a, P: Param> ParamKnob<'a, P> {
         self.param.modulated_normalized_value()
     }
 
-    fn set_normalized_value(&self, normalized: f32) {
-        let value = self.param.preview_plain(normalized);
+    fn discrete_drag_id(ui: &Ui, param: &P) -> egui::Id {
+        ui.auto_id_with(("knob_discrete_drag", param.name()))
+    }
+
+    fn set_plain_value(&self, value: P::Plain) {
         if value != self.param.modulated_plain_value() {
             self.setter.set_parameter(self.param, value);
         }
+    }
+
+    fn set_normalized_value(&self, normalized: f32) {
+        self.set_plain_value(self.param.preview_plain(normalized));
     }
 
     fn reset_param(&self) {
@@ -153,16 +161,53 @@ impl<'a, P: Param> ParamKnob<'a, P> {
 
         if response.drag_started() {
             self.setter.begin_set_parameter(self.param);
+            ui.memory_mut(|mem| {
+                mem.data
+                    .insert_temp(Self::discrete_drag_id(ui, self.param), 0.0f32);
+            });
         }
 
         if response.dragged() {
-            let delta = -response.drag_delta().y * DRAG_SENSITIVITY;
-            let normalized = emath::remap_clamp(
-                self.normalized_value() + delta,
-                0.0..=1.0,
-                0.0..=1.0,
-            );
-            self.set_normalized_value(normalized);
+            let finer = ui.input(|i| i.modifiers.shift);
+            let delta = -response.drag_delta().y;
+
+            if self.param.step_count().is_some() {
+                let drag_id = Self::discrete_drag_id(ui, self.param);
+                let mut accumulated: f32 = ui.memory(|mem| {
+                    mem.data.get_temp(drag_id).unwrap_or(0.0)
+                });
+                accumulated += delta;
+
+                while accumulated >= DISCRETE_DRAG_THRESHOLD {
+                    let normalized = self.normalized_value();
+                    let next = self.param.next_normalized_step(normalized, finer);
+                    if (next - normalized).abs() < f32::EPSILON {
+                        break;
+                    }
+                    self.set_normalized_value(next);
+                    accumulated -= DISCRETE_DRAG_THRESHOLD;
+                }
+
+                while accumulated <= -DISCRETE_DRAG_THRESHOLD {
+                    let normalized = self.normalized_value();
+                    let previous = self.param.previous_normalized_step(normalized, finer);
+                    if (previous - normalized).abs() < f32::EPSILON {
+                        break;
+                    }
+                    self.set_normalized_value(previous);
+                    accumulated += DISCRETE_DRAG_THRESHOLD;
+                }
+
+                ui.memory_mut(|mem| mem.data.insert_temp(drag_id, accumulated));
+            } else {
+                let normalized = emath::remap_clamp(
+                    self.normalized_value() + delta * CONTINUOUS_DRAG_SENSITIVITY,
+                    0.0..=1.0,
+                    0.0..=1.0,
+                );
+                self.set_normalized_value(normalized);
+            }
+
             response.mark_changed();
         }
 

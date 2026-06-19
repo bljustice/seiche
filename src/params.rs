@@ -73,6 +73,17 @@ pub enum SyncDivision {
 }
 
 impl SyncDivision {
+    pub fn label(&self) -> &'static str {
+        match self {
+            Self::Whole => "1/1",
+            Self::Half => "1/2",
+            Self::Quarter => "1/4",
+            Self::Eighth => "1/8",
+            Self::Sixteenth => "1/16",
+            Self::ThirtySecond => "1/32",
+        }
+    }
+
     pub fn beats_per_cycle(self) -> f32 {
         match self {
             Self::Whole => 4.0,
