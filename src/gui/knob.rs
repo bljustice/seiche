@@ -6,7 +6,7 @@ use egui::{
 use nice_plug::prelude::{Param, ParamSetter};
 
 const ARC_START: f32 = 2.356_194_5; // 135°
-const ARC_SWEEP: f32 = 1.5 * TAU; // 270°
+const ARC_SWEEP: f32 = 0.75 * TAU; // 270° (3/4 turn)
 const DRAG_SENSITIVITY: f32 = 0.004;
 
 /// Minimal arc knob for nice-plug parameters. The track is a light arc; the value is
