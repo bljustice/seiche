@@ -5,11 +5,12 @@ use std::sync::atomic::Ordering::{Relaxed};
 use crossover::FilterType;
 use params::TremoloMode;
 
+mod crossover;
 mod editor;
+mod gui;
 mod lfo;
 mod params;
 mod tremolo;
-mod crossover;
 
 impl Plugin for tremolo::Tremolo {
     const NAME: &'static str = "seiche";
