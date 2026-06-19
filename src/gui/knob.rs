@@ -18,6 +18,7 @@ pub struct ParamKnob<'a, P: Param> {
     size: f32,
     stroke_width: f32,
     label_value: Option<String>,
+    param_value: Option<String>,
     draw_label: bool,
     draw_value: bool,
 }
@@ -30,6 +31,7 @@ impl<'a, P: Param> ParamKnob<'a, P> {
             size: 56.0,
             stroke_width: 2.0,
             label_value: None,
+            param_value: None,
             draw_label: true,
             draw_value: true,
         }
@@ -52,6 +54,11 @@ impl<'a, P: Param> ParamKnob<'a, P> {
 
     pub fn without_label(mut self) -> Self {
         self.draw_label = false;
+        self
+    }
+
+    pub fn with_value(mut self, value: String) -> Self {
+        self.param_value = Some(value);
         self
     }
 
@@ -239,7 +246,10 @@ impl<P: Param> Widget for ParamKnob<'_, P> {
 
             if self.draw_value {
                 ui.vertical_centered(|ui| {
-                    ui.label(self.param.to_string());
+                    match &self.param_value {
+                        Some(value) => ui.label(value),
+                        None => ui.label(self.param.to_string()),
+                    }
                 });
             }
 

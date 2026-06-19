@@ -97,7 +97,10 @@ pub(crate) fn create(params: Arc<TremoloParams>, editor_state: Arc<EguiState>) -
                             }
                         });
                         if params.rate_mode.value() == RateMode::Sync {
-                            ui.add(ParamKnob::for_param(&params.sync_division, setter).with_label("Rate".to_string()));
+                            ui.add(
+                                ParamKnob::for_param(&params.sync_division, setter)
+                                .with_label("Rate".to_string())
+                                .with_value(params.sync_division.value().label().to_string()));
                         } else {
                             ui.add(ParamKnob::for_param(&params.rate, setter));
                         }
