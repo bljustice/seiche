@@ -4,6 +4,7 @@ use nice_plug_egui::{create_egui_editor, EguiSettings, EguiState};
 use std::sync::Arc;
 
 use crate::gui::knob::ParamKnob;
+use crate::gui::lfo_icon::lfo_type_combo;
 use crate::params::{TremoloMode, TremoloParams};
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -84,6 +85,7 @@ pub(crate) fn create(params: Arc<TremoloParams>, editor_state: Arc<EguiState>) -
                     ui.vertical(|ui| {
                         ui.add(ParamKnob::for_param(&params.depth, setter));
                         ui.add(ParamKnob::for_param(&params.rate, setter));
+                        lfo_type_combo(ui, &params.lfo, setter);
                     });
                 });
         },

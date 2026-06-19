@@ -126,7 +126,7 @@ impl<'a, P: Param> ParamKnob<'a, P> {
                 Self::value_angle(normalized),
             );
         }
-
+        
         if response.hovered() || response.dragged() {
             ui.painter().circle_filled(
                 center + Vec2::angled(Self::value_angle(normalized)) * radius,

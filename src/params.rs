@@ -6,7 +6,7 @@ use nice_plug_egui::EguiState;
 use crate::editor;
 use crate::lfo::Waveform;
 
-#[derive(Enum, PartialEq, Debug)]
+#[derive(Enum, PartialEq, Copy, Clone, Debug)]
 pub enum LfoType {
     #[id = "sine"]
     Sine,
@@ -24,6 +24,17 @@ pub enum TremoloMode {
     Classic,
     #[id = "harmonic"]
     Harmonic,
+}
+
+impl LfoType {
+    pub fn label(&self) -> &'static str {
+        match self {
+            LfoType::Sine => "Sine",
+            LfoType::Square => "Square",
+            LfoType::Random => "Random",
+            LfoType::Ramp => "Ramp",
+        }
+    }
 }
 
 impl From<LfoType> for Waveform {
