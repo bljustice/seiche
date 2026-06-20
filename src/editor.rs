@@ -1,4 +1,4 @@
-use egui::{Color32, FontData, FontDefinitions, FontFamily, Margin};
+use egui::{Align, Color32, FontData, FontDefinitions, FontFamily, Layout, Margin};
 use nice_plug::prelude::Editor;
 use nice_plug_egui::{create_egui_editor, EguiSettings, EguiState};
 use std::sync::Arc;
@@ -67,58 +67,79 @@ pub(crate) fn create(params: Arc<TremoloParams>, editor_state: Arc<EguiState>) -
                     });
 
                     ui.add_space(16.0);
-
-                    ui.horizontal(|ui| {
-                        let mode = params.mode.value();
-                        if ui.radio(mode == TremoloMode::Classic, "Classic").clicked() {
-                            setter.begin_set_parameter(&params.mode);
-                            setter.set_parameter(&params.mode, TremoloMode::Classic);
-                            setter.end_set_parameter(&params.mode);
-                        }
-                        if ui.radio(mode == TremoloMode::Harmonic, "Harmonic").clicked() {
-                            setter.begin_set_parameter(&params.mode);
-                            setter.set_parameter(&params.mode, TremoloMode::Harmonic);
-                            setter.end_set_parameter(&params.mode);
-                        }
-                    });
-
                     ui.vertical(|ui| {
-                        ui.horizontal(|ui| {
-                            let rate_mode = params.rate_mode.value();
-                            if ui.radio(rate_mode == RateMode::Free, "Free").clicked() {
-                                setter.begin_set_parameter(&params.rate_mode);
-                                setter.set_parameter(&params.rate_mode, RateMode::Free);
-                                setter.end_set_parameter(&params.rate_mode);
-                            }
-                            if ui.radio(rate_mode == RateMode::Sync, "Sync").clicked() {
-                                setter.begin_set_parameter(&params.rate_mode);
-                                setter.set_parameter(&params.rate_mode, RateMode::Sync);
-                            }
-                        });
-                        ui.horizontal(|ui| {
-                            ui.add(ParamKnob::for_param(&params.depth, setter));
-                            ui.add(ParamKnob::for_param(&params.jitter, setter));
-                            if params.rate_mode.value() == RateMode::Sync {
-                                ui.add(
-                                    ParamKnob::for_param(&params.sync_division, setter)
-                                    .with_label("Rate".to_string())
-                                    .with_value(params.sync_division.value().label().to_string()));
-                            } else {
-                                ui.add(ParamKnob::for_param(&params.rate, setter));
-                            }
-                            if params.mode.value() == TremoloMode::Harmonic {
-                                ui.add(ParamKnob::for_param(&params.crossover_frequency, setter));
-                            }
-                        });
-                        lfo_type_combo(ui, &params.lfo, setter);
-                        if params.lfo.value() == LfoType::Random {
-                            ui.horizontal(|ui| {
-                                ui.add(ParamKnob::for_param(&params.flip_probability, setter));
-                                ui.add(ParamKnob::for_param(&params.bias, setter));
+                        ui.columns(4, |columns| {
+                            let mode = params.mode.value();
+                            columns[0].vertical_centered(|ui| {
+                                ui.label("placeholder container");
                             });
-                        }
+                            columns[1].vertical_centered(|ui| {
+                                if ui.radio(mode == TremoloMode::Classic, "Classic").clicked() {
+                                    setter.begin_set_parameter(&params.mode);
+                                    setter.set_parameter(&params.mode, TremoloMode::Classic);
+                                    setter.end_set_parameter(&params.mode);
+                                }
+                            });
+                            columns[2].vertical_centered(|ui| {
+                                if ui.radio(mode == TremoloMode::Harmonic, "Harmonic").clicked() {
+                                    setter.begin_set_parameter(&params.mode);
+                                    setter.set_parameter(&params.mode, TremoloMode::Harmonic);
+                                    setter.end_set_parameter(&params.mode);
+                                }
+                            });
+                            columns[3].vertical_centered(|ui| {
+                                ui.label("placeholder container");
+                            });
+                        });
                     });
-                });
+                    ui.add_space(16.0);
+
+                        // centered_horizontal_row(ui, |ui| {
+                        //     let rate_mode = params.rate_mode.value();
+                        //     if ui.radio(rate_mode == RateMode::Free, "Free").clicked() {
+                        //         setter.begin_set_parameter(&params.rate_mode);
+                        //         setter.set_parameter(&params.rate_mode, RateMode::Free);
+                        //         setter.end_set_parameter(&params.rate_mode);
+                        //     }
+                        //     if ui.radio(rate_mode == RateMode::Sync, "Sync").clicked() {
+                        //         setter.begin_set_parameter(&params.rate_mode);
+                        //         setter.set_parameter(&params.rate_mode, RateMode::Sync);
+                        //         setter.end_set_parameter(&params.rate_mode);
+                        //     }
+                        // });
+
+                        // ui.add_space(16.0);
+
+                        // centered_horizontal_row(ui, |ui| {
+                        //     ui.add(ParamKnob::for_param(&params.depth, setter));
+                        //     ui.add(ParamKnob::for_param(&params.jitter, setter));
+                        //     if params.rate_mode.value() == RateMode::Sync {
+                        //         ui.add(
+                        //             ParamKnob::for_param(&params.sync_division, setter)
+                        //                 .with_label("Rate".to_string())
+                        //                 .with_value(params.sync_division.value().label().to_string()),
+                        //         );
+                        //     } else {
+                        //         ui.add(ParamKnob::for_param(&params.rate, setter));
+                        //     }
+                        //     if params.mode.value() == TremoloMode::Harmonic {
+                        //         ui.add(ParamKnob::for_param(&params.crossover_frequency, setter));
+                        //     }
+                        // });
+
+                        // ui.add_space(16.0);
+
+                        // lfo_type_combo(ui, &params.lfo, setter);
+
+                        // if params.lfo.value() == LfoType::Random {
+                        //     ui.add_space(16.0);
+
+                        //     centered_horizontal_row(ui, |ui| {
+                        //         ui.add(ParamKnob::for_param(&params.flip_probability, setter));
+                        //         ui.add(ParamKnob::for_param(&params.bias, setter));
+                        //     });
+                        // }
+                    });
         },
     )
 }
