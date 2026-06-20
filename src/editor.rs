@@ -5,7 +5,7 @@ use std::sync::Arc;
 
 use crate::gui::knob::ParamKnob;
 use crate::gui::lfo_icon::lfo_type_combo;
-use crate::params::{TremoloMode, RateMode, TremoloParams};
+use crate::params::{TremoloMode, RateMode, TremoloParams, LfoType};
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 const PLUGIN_WIDTH: f32 = 600.0;
@@ -83,7 +83,6 @@ pub(crate) fn create(params: Arc<TremoloParams>, editor_state: Arc<EguiState>) -
                     });
 
                     ui.vertical(|ui| {
-                        ui.add(ParamKnob::for_param(&params.depth, setter));
                         ui.horizontal(|ui| {
                             let rate_mode = params.rate_mode.value();
                             if ui.radio(rate_mode == RateMode::Free, "Free").clicked() {
@@ -96,15 +95,28 @@ pub(crate) fn create(params: Arc<TremoloParams>, editor_state: Arc<EguiState>) -
                                 setter.set_parameter(&params.rate_mode, RateMode::Sync);
                             }
                         });
-                        if params.rate_mode.value() == RateMode::Sync {
-                            ui.add(
-                                ParamKnob::for_param(&params.sync_division, setter)
-                                .with_label("Rate".to_string())
-                                .with_value(params.sync_division.value().label().to_string()));
-                        } else {
-                            ui.add(ParamKnob::for_param(&params.rate, setter));
-                        }
+                        ui.horizontal(|ui| {
+                            ui.add(ParamKnob::for_param(&params.depth, setter));
+                            ui.add(ParamKnob::for_param(&params.jitter, setter));
+                            if params.rate_mode.value() == RateMode::Sync {
+                                ui.add(
+                                    ParamKnob::for_param(&params.sync_division, setter)
+                                    .with_label("Rate".to_string())
+                                    .with_value(params.sync_division.value().label().to_string()));
+                            } else {
+                                ui.add(ParamKnob::for_param(&params.rate, setter));
+                            }
+                            if params.mode.value() == TremoloMode::Harmonic {
+                                ui.add(ParamKnob::for_param(&params.crossover_frequency, setter));
+                            }
+                        });
                         lfo_type_combo(ui, &params.lfo, setter);
+                        if params.lfo.value() == LfoType::Random {
+                            ui.horizontal(|ui| {
+                                ui.add(ParamKnob::for_param(&params.flip_probability, setter));
+                                ui.add(ParamKnob::for_param(&params.bias, setter));
+                            });
+                        }
                     });
                 });
         },
