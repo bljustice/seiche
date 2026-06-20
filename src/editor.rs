@@ -97,7 +97,7 @@ pub(crate) fn create(params: Arc<TremoloParams>, editor_state: Arc<EguiState>) -
                     ui.add_space(16.0);
 
                     ui.vertical(|ui| {
-                        ui.columns(5, |columns| {
+                        ui.columns(4, |columns| {
                             let rate_mode = params.rate_mode.value();
                             columns[0].vertical_centered(|ui| {
                                 ui.label("placeholder container");
