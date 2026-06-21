@@ -3,6 +3,8 @@ import { SegmentedControl } from "segmented.slint";
 import { LfoPicker } from "lfo_icon.slint";
 
 export component AppWindow inherits Window {
+
+    default-font-weight: FontWeight.thin;
     preferred-width: 480px;
     preferred-height: 520px;
     min-width: 400px;
@@ -50,7 +52,7 @@ export component AppWindow inherits Window {
             text: "SEICHE";
             color: #000000;
             font-size: 14px;
-            font-weight: 700;
+            // font-weight: 700;
             letter-spacing: 4px;
             horizontal-alignment: center;
         }
@@ -101,7 +103,6 @@ export component AppWindow inherits Window {
                 text: root.depth-label;
                 color: #000000;
                 font-size: 12px;
-                font-weight: 600;
                 horizontal-alignment: center;
             }
 
@@ -112,7 +113,6 @@ export component AppWindow inherits Window {
                 text: "Depth";
                 color: #000000;
                 font-size: 9px;
-                font-weight: 600;
                 letter-spacing: 2px;
                 horizontal-alignment: center;
             }
@@ -123,11 +123,11 @@ export component AppWindow inherits Window {
                 width: parent.knob-size;
                 height: parent.knob-size;
                 value <=> root.rate-value;
-                minimum: 0.0;
-                maximum: 1.0;
-                changed(v) => { root.rate-changed(v); }
-                begin-drag() => { root.rate-begin-drag(); }
-                end-drag() => { root.rate-end-drag(); }
+               minimum: 0.0;
+               maximum: 1.0;
+               changed(v) => { root.rate-changed(v); }
+               begin-drag() => { root.rate-begin-drag(); }
+               end-drag() => { root.rate-end-drag(); }
             }
 
             if !root.sync-mode: Text {
@@ -137,7 +137,6 @@ export component AppWindow inherits Window {
                 text: root.rate-label;
                 color: #000000;
                 font-size: 12px;
-                font-weight: 600;
                 horizontal-alignment: center;
             }
 
@@ -148,7 +147,6 @@ export component AppWindow inherits Window {
                 text: "Rate";
                 color: #000000;
                 font-size: 9px;
-                font-weight: 600;
                 letter-spacing: 2px;
                 horizontal-alignment: center;
             }
@@ -178,7 +176,6 @@ export component AppWindow inherits Window {
                             text: div;
                             color: root.sync-division-index == i ? #ffffff : #000000;
                             font-size: 7px;
-                            font-weight: 600;
                             horizontal-alignment: center;
                             vertical-alignment: center;
                         }
@@ -197,10 +194,9 @@ export component AppWindow inherits Window {
                 x: parent.col2-x;
                 y: parent.label-y;
                 width: parent.knob-size;
-                text: "SYNC";
+                text: ["1/1", "1/2", "1/4", "1/8", "1/16", "1/32"][root.sync-division-index];
                 color: #000000;
                 font-size: 12px;
-                font-weight: 600;
                 horizontal-alignment: center;
             }
 
@@ -208,10 +204,9 @@ export component AppWindow inherits Window {
                 x: parent.col2-x;
                 y: parent.title-y;
                 width: parent.knob-size;
-                text: "DIVISION";
+                text: "Division";
                 color: #000000;
                 font-size: 9px;
-                font-weight: 600;
                 letter-spacing: 2px;
                 horizontal-alignment: center;
             }
@@ -236,7 +231,6 @@ export component AppWindow inherits Window {
                 text: root.crossover-label;
                 color: #000000;
                 font-size: 12px;
-                font-weight: 600;
                 horizontal-alignment: center;
             }
 
@@ -247,7 +241,6 @@ export component AppWindow inherits Window {
                 text: "Crossover";
                 color: #000000;
                 font-size: 9px;
-                font-weight: 600;
                 letter-spacing: 2px;
                 horizontal-alignment: center;
             }
@@ -262,7 +255,6 @@ export component AppWindow inherits Window {
                 text: "MODE";
                 color: #000000;
                 font-size: 10px;
-                font-weight: 600;
                 letter-spacing: 2px;
                 horizontal-alignment: center;
             }
@@ -283,7 +275,6 @@ export component AppWindow inherits Window {
                 text: "TEMPO";
                 color: #000000;
                 font-size: 10px;
-                font-weight: 600;
                 letter-spacing: 2px;
                 horizontal-alignment: center;
             }
@@ -304,7 +295,6 @@ export component AppWindow inherits Window {
                 text: "LFO";
                 color: #000000;
                 font-size: 10px;
-                font-weight: 600;
                 letter-spacing: 2px;
                 horizontal-alignment: center;
             }

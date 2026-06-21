@@ -142,14 +142,21 @@ export component LfoPicker inherits Rectangle {
                 border-width: 1px;
                 border-color: #000000;
 
-                LfoIcon {
-                    x: (parent.width - self.width) / 2;
-                    y: 6px;
-                    width: 56px;
-                    waveform: idx;
+                HorizontalLayout {
+                    width: 100%;
+                    height: 100%;
+                    alignment: center;
+
+                    LfoIcon {
+                        width: 56px;
+                        height: 20px;
+                        waveform: idx;
+                    }
                 }
 
                 TouchArea {
+                    width: 100%;
+                    height: 100%;
                     clicked => {
                         root.current-index = idx;
                         root.changed(idx);
