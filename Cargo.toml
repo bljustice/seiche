@@ -23,8 +23,11 @@ inherits = "release"
 debug = true
 strip = "none"
 
+[build-dependencies]
+slint-build = "=1.16.1"
+
 [dependencies]
 atomic_float = "1.1"
-egui = { version = "0.34", default-features = false, features = ["default_fonts"] }
 nice-plug = { git = "https://codeberg.org/RustAudio/nice-plug.git", features = ["assert_process_allocs"] }
-nice-plug-egui = { git = "https://codeberg.org/RustAudio/nice-plug.git", default-features = false, features = ["opengl"] }
+nice_plug_slint = { git = "https://github.com/aidan729/nice-plug-slint" }
+slint = { version = "=1.16.1", default-features = false, features = ["std", "renderer-femtovg", "raw-window-handle-06", "compat-1-2"] }

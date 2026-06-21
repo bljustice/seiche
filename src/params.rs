@@ -1,6 +1,8 @@
+use std::sync::Arc;
 use nice_plug::{prelude::{
     Enum, EnumParam, FloatParam, FloatRange, Params, SmoothingStyle, formatters
 }};
+use nice_plug_slint::SlintEditorState;
 
 use crate::lfo::Waveform;
 
@@ -74,6 +76,8 @@ impl SyncDivision {
 
 #[derive(Params)]
 pub struct TremoloParams {
+    #[persist = "editor_state"]
+    pub editor_state: Arc<SlintEditorState>,
     #[id = "mode"]
     pub mode: EnumParam<TremoloMode>,
     #[id = "depth"] 
@@ -99,6 +103,7 @@ pub struct TremoloParams {
 impl TremoloParams {
     pub fn new() -> Self {
         Self {
+            editor_state: Arc::new(SlintEditorState::new(480, 520)),
             mode: EnumParam::new("Mode", TremoloMode::Classic),
             depth: FloatParam::new(
                 "Depth",

@@ -5,6 +5,8 @@ use std::sync::atomic::Ordering::{Relaxed};
 use crossover::FilterType;
 use params::TremoloMode;
 
+mod editor;
+mod gui;
 mod lfo;
 mod params;
 mod tremolo;
@@ -65,6 +67,10 @@ impl Plugin for tremolo::Tremolo {
 
     fn params(&self) -> Arc<dyn Params> {
         self.params.clone()
+    }
+
+    fn editor(&mut self, _async_executor: AsyncExecutor<Self>) -> Option<Box<dyn Editor>> {
+        editor::create(self.params.clone())
     }
 
     fn process(

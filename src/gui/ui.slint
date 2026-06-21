@@ -1,0 +1,248 @@
+import { Knob } from "knob.slint";
+import { SegmentedControl } from "segmented.slint";
+import { LfoPicker } from "lfo_icon.slint";
+
+export component AppWindow inherits Window {
+    preferred-width: 480px;
+    preferred-height: 520px;
+    min-width: 400px;
+    min-height: 480px;
+
+    in-out property <float> depth-value: 0.5;
+    in-out property <string> depth-label: "50 %";
+    in-out property <float> rate-value: 0.5;
+    in-out property <string> rate-label: "4.00 Hz";
+    in-out property <int> mode-index: 0;
+    in-out property <int> rate-mode-index: 0;
+    in-out property <int> lfo-index: 0;
+    in-out property <int> sync-division-index: 2;
+    in-out property <bool> sync-mode: false;
+
+    callback depth-changed(float);
+    callback depth-begin-drag();
+    callback depth-end-drag();
+    callback rate-changed(float);
+    callback rate-begin-drag();
+    callback rate-end-drag();
+    callback mode-changed(int);
+    callback rate-mode-changed(int);
+    callback sync-division-changed(int);
+    callback lfo-changed(int);
+
+    background: #141414;
+
+    VerticalLayout {
+        padding: 24px;
+        spacing: 20px;
+        alignment: center;
+
+        Text {
+            text: "SEICHE";
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            horizontal-alignment: center;
+        }
+
+        Rectangle {
+            height: 1px;
+            width: 48px;
+            background: #2a2a2a;
+        }
+
+        HorizontalLayout {
+            spacing: 36px;
+            alignment: center;
+
+            VerticalLayout {
+                spacing: 8px;
+                alignment: center;
+                min-width: 130px;
+
+                Knob {
+                    width: 120px;
+                    height: 120px;
+                    value <=> root.depth-value;
+                    minimum: 0.0;
+                    maximum: 1.0;
+                    changed(v) => { root.depth-changed(v); }
+                    begin-drag() => { root.depth-begin-drag(); }
+                    end-drag() => { root.depth-end-drag(); }
+                }
+
+                Text {
+                    text: root.depth-label;
+                    color: #06b6d4;
+                    font-size: 15px;
+                    font-weight: 600;
+                    horizontal-alignment: center;
+                }
+
+                Text {
+                    text: "DEPTH";
+                    color: #555555;
+                    font-size: 10px;
+                    font-weight: 600;
+                    letter-spacing: 2px;
+                    horizontal-alignment: center;
+                }
+            }
+
+            if !root.sync-mode: VerticalLayout {
+                spacing: 8px;
+                alignment: center;
+                min-width: 130px;
+
+                Knob {
+                    width: 120px;
+                    height: 120px;
+                    value <=> root.rate-value;
+                    minimum: 0.0;
+                    maximum: 1.0;
+                    changed(v) => { root.rate-changed(v); }
+                    begin-drag() => { root.rate-begin-drag(); }
+                    end-drag() => { root.rate-end-drag(); }
+                }
+
+                Text {
+                    text: root.rate-label;
+                    color: #06b6d4;
+                    font-size: 15px;
+                    font-weight: 600;
+                    horizontal-alignment: center;
+                }
+
+                Text {
+                    text: "RATE";
+                    color: #555555;
+                    font-size: 10px;
+                    font-weight: 600;
+                    letter-spacing: 2px;
+                    horizontal-alignment: center;
+                }
+            }
+
+            if root.sync-mode: VerticalLayout {
+                spacing: 10px;
+                alignment: center;
+                min-width: 130px;
+
+                Rectangle {
+                    width: 120px;
+                    height: 120px;
+                    background: #1a1a1a;
+                    border-radius: 8px;
+                    border-width: 1px;
+                    border-color: #2a2a2a;
+
+                    VerticalLayout {
+                        padding: 12px;
+                        spacing: 6px;
+
+                        for div[i] in ["1/1", "1/2", "1/4", "1/8", "1/16", "1/32"]: Rectangle {
+                            height: 14px;
+                            border-radius: 3px;
+                            background: root.sync-division-index == i ? #0891b2 : #252525;
+
+                            Text {
+                                text: div;
+                                color: root.sync-division-index == i ? #ffffff : #777777;
+                                font-size: 9px;
+                                font-weight: 600;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                            }
+
+                            TouchArea {
+                                clicked => {
+                                    root.sync-division-index = i;
+                                    root.sync-division-changed(i);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Text {
+                    text: "SYNC";
+                    color: #06b6d4;
+                    font-size: 15px;
+                    font-weight: 600;
+                    horizontal-alignment: center;
+                }
+
+                Text {
+                    text: "DIVISION";
+                    color: #555555;
+                    font-size: 10px;
+                    font-weight: 600;
+                    letter-spacing: 2px;
+                    horizontal-alignment: center;
+                }
+            }
+        }
+
+        VerticalLayout {
+            spacing: 8px;
+            alignment: center;
+            width: 100%;
+
+            Text {
+                text: "MODE";
+                color: #555555;
+                font-size: 10px;
+                font-weight: 600;
+                letter-spacing: 2px;
+                horizontal-alignment: center;
+            }
+
+            SegmentedControl {
+                options: ["Classic", "Harmonic"];
+                current-index <=> root.mode-index;
+                selected(i) => { root.mode-changed(i); }
+            }
+        }
+
+        VerticalLayout {
+            spacing: 8px;
+            alignment: center;
+            width: 100%;
+
+            Text {
+                text: "TEMPO";
+                color: #555555;
+                font-size: 10px;
+                font-weight: 600;
+                letter-spacing: 2px;
+                horizontal-alignment: center;
+            }
+
+            SegmentedControl {
+                options: ["Free", "Sync"];
+                current-index <=> root.rate-mode-index;
+                selected(i) => { root.rate-mode-changed(i); }
+            }
+        }
+
+        VerticalLayout {
+            spacing: 8px;
+            alignment: center;
+            width: 100%;
+
+            Text {
+                text: "LFO";
+                color: #555555;
+                font-size: 10px;
+                font-weight: 600;
+                letter-spacing: 2px;
+                horizontal-alignment: center;
+            }
+
+            LfoPicker {
+                current-index <=> root.lfo-index;
+                changed(i) => { root.lfo-changed(i); }
+            }
+        }
+    }
+}

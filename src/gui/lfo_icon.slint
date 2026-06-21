@@ -1,0 +1,159 @@
+component SineWave inherits Path {
+    viewbox-width: 100;
+    viewbox-height: 40;
+    width: 100%;
+    height: 100%;
+    stroke: #06b6d4;
+    stroke-width: 2.5px;
+    fill: transparent;
+    MoveTo { x: 0; y: 20; }
+    LineTo { x: 12; y: 8; }
+    LineTo { x: 25; y: 20; }
+    LineTo { x: 37; y: 32; }
+    LineTo { x: 50; y: 20; }
+    LineTo { x: 62; y: 8; }
+    LineTo { x: 75; y: 20; }
+    LineTo { x: 87; y: 32; }
+    LineTo { x: 100; y: 20; }
+}
+
+component SquareWave inherits Path {
+    viewbox-width: 100;
+    viewbox-height: 40;
+    width: 100%;
+    height: 100%;
+    stroke: #06b6d4;
+    stroke-width: 2.5px;
+    fill: transparent;
+    MoveTo { x: 0; y: 10; }
+    LineTo { x: 22; y: 10; }
+    LineTo { x: 22; y: 30; }
+    LineTo { x: 50; y: 30; }
+    LineTo { x: 50; y: 10; }
+    LineTo { x: 78; y: 10; }
+    LineTo { x: 78; y: 30; }
+    LineTo { x: 100; y: 30; }
+}
+
+component RandomWave inherits Path {
+    viewbox-width: 100;
+    viewbox-height: 40;
+    width: 100%;
+    height: 100%;
+    stroke: #06b6d4;
+    stroke-width: 2.5px;
+    fill: transparent;
+    MoveTo { x: 0; y: 22; }
+    LineTo { x: 14; y: 12; }
+    LineTo { x: 28; y: 28; }
+    LineTo { x: 42; y: 8; }
+    LineTo { x: 56; y: 32; }
+    LineTo { x: 70; y: 14; }
+    LineTo { x: 84; y: 26; }
+    LineTo { x: 100; y: 18; }
+}
+
+component RampWave inherits Path {
+    viewbox-width: 100;
+    viewbox-height: 40;
+    width: 100%;
+    height: 100%;
+    stroke: #06b6d4;
+    stroke-width: 2.5px;
+    fill: transparent;
+    MoveTo { x: 0; y: 32; }
+    LineTo { x: 33; y: 8; }
+    LineTo { x: 33; y: 32; }
+    LineTo { x: 66; y: 8; }
+    LineTo { x: 66; y: 32; }
+    LineTo { x: 100; y: 8; }
+}
+
+export component LfoIcon inherits Rectangle {
+    in property <int> waveform: 0;
+    width: 48px;
+    height: 20px;
+
+    if root.waveform == 0: SineWave { }
+    if root.waveform == 1: SquareWave { }
+    if root.waveform == 2: RandomWave { }
+    if root.waveform == 3: RampWave { }
+}
+
+export component LfoPicker inherits Rectangle {
+    in-out property <int> current-index: 0;
+    callback changed(int);
+    property <bool> open: false;
+
+    width: 140px;
+    height: 36px;
+
+    Rectangle {
+        width: 100%;
+        height: 100%;
+        background: #1f1f1f;
+        border-radius: 4px;
+        border-width: 1px;
+        border-color: #333333;
+
+        HorizontalLayout {
+            padding-left: 10px;
+            padding-right: 10px;
+            spacing: 8px;
+
+            LfoIcon {
+                width: 56px;
+                waveform: root.current-index;
+            }
+
+            Text {
+                text: "▾";
+                color: #666666;
+                font-size: 12px;
+                vertical-alignment: center;
+            }
+        }
+
+        TouchArea {
+            clicked => {
+                root.open = !root.open;
+            }
+        }
+    }
+
+    if root.open: Rectangle {
+        y: parent.height + 4px;
+        width: parent.width;
+        background: #1a1a1a;
+        border-radius: 4px;
+        border-width: 1px;
+        border-color: #333333;
+        clip: false;
+
+        VerticalLayout {
+            padding: 4px;
+            spacing: 2px;
+
+            for idx[i] in [0, 1, 2, 3]: Rectangle {
+                height: 32px;
+                border-radius: 3px;
+                background: root.current-index == idx ? #0891b233 : transparent;
+
+                LfoIcon {
+                    x: 10px;
+                    y: 6px;
+                    width: 56px;
+                    waveform: idx;
+                }
+
+                TouchArea {
+                    clicked => {
+                        root.current-index = idx;
+                        root.changed(idx);
+                        root.open = false;
+                    }
+                }
+            }
+        }
+    }
+}
