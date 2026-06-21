@@ -3,7 +3,7 @@ component SineWave inherits Path {
     viewbox-height: 40;
     width: 100%;
     height: 100%;
-    stroke: #06b6d4;
+    stroke: #000000;
     stroke-width: 2.5px;
     fill: transparent;
     MoveTo { x: 0; y: 20; }
@@ -22,7 +22,7 @@ component SquareWave inherits Path {
     viewbox-height: 40;
     width: 100%;
     height: 100%;
-    stroke: #06b6d4;
+    stroke: #000000;
     stroke-width: 2.5px;
     fill: transparent;
     MoveTo { x: 0; y: 10; }
@@ -40,7 +40,7 @@ component RandomWave inherits Path {
     viewbox-height: 40;
     width: 100%;
     height: 100%;
-    stroke: #06b6d4;
+    stroke: #000000;
     stroke-width: 2.5px;
     fill: transparent;
     MoveTo { x: 0; y: 22; }
@@ -58,7 +58,7 @@ component RampWave inherits Path {
     viewbox-height: 40;
     width: 100%;
     height: 100%;
-    stroke: #06b6d4;
+    stroke: #000000;
     stroke-width: 2.5px;
     fill: transparent;
     MoveTo { x: 0; y: 32; }
@@ -91,12 +91,13 @@ export component LfoPicker inherits Rectangle {
     Rectangle {
         width: 100%;
         height: 100%;
-        background: #1f1f1f;
+        background: #ffffff;
         border-radius: 4px;
         border-width: 1px;
-        border-color: #333333;
+        border-color: #000000;
 
         HorizontalLayout {
+            alignment: center;
             padding-left: 10px;
             padding-right: 10px;
             spacing: 8px;
@@ -108,7 +109,7 @@ export component LfoPicker inherits Rectangle {
 
             Text {
                 text: "▾";
-                color: #666666;
+                color: #000000;
                 font-size: 12px;
                 vertical-alignment: center;
             }
@@ -124,10 +125,10 @@ export component LfoPicker inherits Rectangle {
     if root.open: Rectangle {
         y: parent.height + 4px;
         width: parent.width;
-        background: #1a1a1a;
+        background: #ffffff;
         border-radius: 4px;
         border-width: 1px;
-        border-color: #333333;
+        border-color: #000000;
         clip: false;
 
         VerticalLayout {
@@ -137,10 +138,12 @@ export component LfoPicker inherits Rectangle {
             for idx[i] in [0, 1, 2, 3]: Rectangle {
                 height: 32px;
                 border-radius: 3px;
-                background: root.current-index == idx ? #0891b233 : transparent;
+                background: root.current-index == idx ? #e0e0e0 : #ffffff;
+                border-width: 1px;
+                border-color: #000000;
 
                 LfoIcon {
-                    x: 10px;
+                    x: (parent.width - self.width) / 2;
                     y: 6px;
                     width: 56px;
                     waveform: idx;

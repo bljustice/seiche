@@ -14,7 +14,6 @@ export component Knob inherits Rectangle {
     property <float> norm-value: (value - minimum) / (maximum - minimum);
     property <angle> arc-progress: 0.75turn + norm-value * 0.5turn;
 
-    // Outer glow ring — glows blue-cyan when value is non-zero
     Rectangle {
         width: root.width;
         height: root.height;
@@ -22,29 +21,26 @@ export component Knob inherits Rectangle {
         y: 0;
         border-radius: self.width / 2;
         background: transparent;
-        border-color: rgba(59, 130, 246, root.norm-value * 0.25);
+        border-color: rgba(0, 0, 0, root.norm-value * 0.2);
         border-width: 6px * root.knob-scale;
     }
 
-    // Knob body — dark radial gradient
     Rectangle {
         width: root.width * 0.62;
         height: root.height * 0.62;
         x: (parent.width - self.width) / 2;
         y: (parent.height - self.height) / 2;
         border-radius: self.width / 2;
-        background: @radial-gradient(circle, #323232, #0f0f0f);
+        background: @radial-gradient(circle, #ffffff, #d9d9d9);
 
-        // Inner shadow ring
-        border-color: #181818;
+        border-color: #000000;
         border-width: 2px;
 
-        // Indicator dot
         Rectangle {
             width: 9px * root.knob-scale;
             height: 9px * root.knob-scale;
             border-radius: self.width / 2;
-            background: white;
+            background: #000000;
 
             property <float> radius: 0.72;
             x: parent.width / 2 - self.width / 2 + (parent.width / 2) * radius * (-sin(-root.arc-progress));
@@ -52,14 +48,13 @@ export component Knob inherits Rectangle {
         }
     }
 
-    // Track arc (full range, dimmed)
     Path {
         viewbox-width: 1;
         viewbox-height: 1;
         width: parent.width;
         height: parent.height;
         stroke-width: 4px * root.knob-scale;
-        stroke: rgba(255, 255, 255, 0.06);
+        stroke: rgba(0, 0, 0, 0.15);
 
         MoveTo {
             x: 0.5 - 0.38 * sin(-(0.75turn));
@@ -75,14 +70,13 @@ export component Knob inherits Rectangle {
         }
     }
 
-    // Value arc (progress, blue-cyan gradient)
     Path {
         viewbox-width: 1;
         viewbox-height: 1;
         width: parent.width;
         height: parent.height;
         stroke-width: 5px * root.knob-scale;
-        stroke: @linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%);
+        stroke: #000000;
 
         MoveTo {
             x: 0.5 - 0.38 * sin(-(0.75turn));
@@ -98,7 +92,6 @@ export component Knob inherits Rectangle {
         }
     }
 
-    // Drag interaction
     TouchArea {
         width: root.width;
         height: root.height;
