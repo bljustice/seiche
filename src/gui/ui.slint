@@ -12,6 +12,8 @@ export component AppWindow inherits Window {
     in-out property <string> depth-label: "50 %";
     in-out property <float> rate-value: 0.5;
     in-out property <string> rate-label: "4.00 Hz";
+    in-out property <float> crossover-value: 0.5;
+    in-out property <string> crossover-label: "400 Hz";
     in-out property <int> mode-index: 0;
     in-out property <int> rate-mode-index: 0;
     in-out property <int> lfo-index: 0;
@@ -24,14 +26,22 @@ export component AppWindow inherits Window {
     callback rate-changed(float);
     callback rate-begin-drag();
     callback rate-end-drag();
+    callback crossover-changed(float);
+    callback crossover-begin-drag();
+    callback crossover-end-drag();
     callback mode-changed(int);
     callback rate-mode-changed(int);
     callback sync-division-changed(int);
     callback lfo-changed(int);
+    callback resize-requested(float, float);
 
     background: #c8dff5;
 
-    VerticalLayout {
+    Rectangle {
+        width: 100%;
+        height: 100%;
+
+        VerticalLayout {
         padding: 24px;
         spacing: 20px;
         alignment: center;
@@ -51,137 +61,195 @@ export component AppWindow inherits Window {
             background: #000000;
         }
 
-        HorizontalLayout {
-            spacing: 36px;
-            alignment: center;
+        knob-row := Rectangle {
+            width: root.width - 48px;
+            height: self.knob-size + 44px;
 
-            VerticalLayout {
-                spacing: 8px;
-                alignment: center;
-                min-width: 130px;
+            property <int> knob-count: root.mode-index == 1 ? 3 : 2;
+            property <length> knob-gap: self.knob-count == 3 ? 10px : 20px;
+            property <length> knob-size: min(
+                120px,
+                max(
+                    72px,
+                    (self.width - (self.knob-count - 1) * self.knob-gap) / self.knob-count,
+                ),
+            );
+            property <length> row-width: self.knob-count * self.knob-size + (self.knob-count - 1) * self.knob-gap;
+            property <length> origin-x: (self.width - self.row-width) / 2;
+            property <length> col2-x: self.origin-x + self.knob-size + self.knob-gap;
+            property <length> col3-x: self.origin-x + 2 * (self.knob-size + self.knob-gap);
+            property <length> label-y: self.knob-size + 6px;
+            property <length> title-y: self.knob-size + 22px;
 
-                Knob {
-                    width: 120px;
-                    height: 120px;
-                    value <=> root.depth-value;
-                    minimum: 0.0;
-                    maximum: 1.0;
-                    changed(v) => { root.depth-changed(v); }
-                    begin-drag() => { root.depth-begin-drag(); }
-                    end-drag() => { root.depth-end-drag(); }
-                }
-
-                Text {
-                    text: root.depth-label;
-                    color: #000000;
-                    font-size: 15px;
-                    font-weight: 600;
-                    horizontal-alignment: center;
-                }
-
-                Text {
-                    text: "Depth";
-                    color: #000000;
-                    font-size: 10px;
-                    font-weight: 600;
-                    letter-spacing: 2px;
-                    horizontal-alignment: center;
-                }
+            Knob {
+                x: parent.origin-x;
+                y: 0;
+                width: parent.knob-size;
+                height: parent.knob-size;
+                value <=> root.depth-value;
+                minimum: 0.0;
+                maximum: 1.0;
+                changed(v) => { root.depth-changed(v); }
+                begin-drag() => { root.depth-begin-drag(); }
+                end-drag() => { root.depth-end-drag(); }
             }
 
-            if !root.sync-mode: VerticalLayout {
-                spacing: 8px;
-                alignment: center;
-                min-width: 130px;
-
-                Knob {
-                    width: 120px;
-                    height: 120px;
-                    value <=> root.rate-value;
-                    minimum: 0.0;
-                    maximum: 1.0;
-                    changed(v) => { root.rate-changed(v); }
-                    begin-drag() => { root.rate-begin-drag(); }
-                    end-drag() => { root.rate-end-drag(); }
-                }
-
-                Text {
-                    text: root.rate-label;
-                    color: #000000;
-                    font-size: 15px;
-                    font-weight: 600;
-                    horizontal-alignment: center;
-                }
-
-                Text {
-                    text: "Rate";
-                    color: #000000;
-                    font-size: 10px;
-                    font-weight: 600;
-                    letter-spacing: 2px;
-                    horizontal-alignment: center;
-                }
+            Text {
+                x: parent.origin-x;
+                y: parent.label-y;
+                width: parent.knob-size;
+                text: root.depth-label;
+                color: #000000;
+                font-size: 12px;
+                font-weight: 600;
+                horizontal-alignment: center;
             }
 
-            if root.sync-mode: VerticalLayout {
-                spacing: 10px;
-                alignment: center;
-                min-width: 130px;
+            Text {
+                x: parent.origin-x;
+                y: parent.title-y;
+                width: parent.knob-size;
+                text: "Depth";
+                color: #000000;
+                font-size: 9px;
+                font-weight: 600;
+                letter-spacing: 2px;
+                horizontal-alignment: center;
+            }
 
-                Rectangle {
-                    width: 120px;
-                    height: 120px;
-                    background: #ffffff;
-                    border-radius: 8px;
-                    border-width: 1px;
-                    border-color: #000000;
+            if !root.sync-mode: Knob {
+                x: parent.col2-x;
+                y: 0;
+                width: parent.knob-size;
+                height: parent.knob-size;
+                value <=> root.rate-value;
+                minimum: 0.0;
+                maximum: 1.0;
+                changed(v) => { root.rate-changed(v); }
+                begin-drag() => { root.rate-begin-drag(); }
+                end-drag() => { root.rate-end-drag(); }
+            }
 
-                    VerticalLayout {
-                        padding: 12px;
-                        spacing: 6px;
+            if !root.sync-mode: Text {
+                x: parent.col2-x;
+                y: parent.label-y;
+                width: parent.knob-size;
+                text: root.rate-label;
+                color: #000000;
+                font-size: 12px;
+                font-weight: 600;
+                horizontal-alignment: center;
+            }
 
-                        for div[i] in ["1/1", "1/2", "1/4", "1/8", "1/16", "1/32"]: Rectangle {
-                            height: 14px;
-                            border-radius: 3px;
-                            background: root.sync-division-index == i ? #000000 : #ffffff;
-                            border-width: 1px;
-                            border-color: #000000;
+            if !root.sync-mode: Text {
+                x: parent.col2-x;
+                y: parent.title-y;
+                width: parent.knob-size;
+                text: "Rate";
+                color: #000000;
+                font-size: 9px;
+                font-weight: 600;
+                letter-spacing: 2px;
+                horizontal-alignment: center;
+            }
 
-                            Text {
-                                text: div;
-                                color: root.sync-division-index == i ? #ffffff : #000000;
-                                font-size: 9px;
-                                font-weight: 600;
-                                horizontal-alignment: center;
-                                vertical-alignment: center;
-                            }
+            if root.sync-mode: Rectangle {
+                x: parent.col2-x;
+                y: 0;
+                width: parent.knob-size;
+                height: parent.knob-size;
+                background: #ffffff;
+                border-radius: 6px;
+                border-width: 1px;
+                border-color: #000000;
 
-                            TouchArea {
-                                clicked => {
-                                    root.sync-division-index = i;
-                                    root.sync-division-changed(i);
-                                }
+                VerticalLayout {
+                    padding: 8px;
+                    spacing: 4px;
+
+                    for div[i] in ["1/1", "1/2", "1/4", "1/8", "1/16", "1/32"]: Rectangle {
+                        height: 11px;
+                        border-radius: 2px;
+                        background: root.sync-division-index == i ? #000000 : #ffffff;
+                        border-width: 1px;
+                        border-color: #000000;
+
+                        Text {
+                            text: div;
+                            color: root.sync-division-index == i ? #ffffff : #000000;
+                            font-size: 7px;
+                            font-weight: 600;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                        }
+
+                        TouchArea {
+                            clicked => {
+                                root.sync-division-index = i;
+                                root.sync-division-changed(i);
                             }
                         }
                     }
                 }
+            }
 
-                Text {
-                    text: "SYNC";
-                    color: #000000;
-                    font-size: 15px;
-                    font-weight: 600;
-                    horizontal-alignment: center;
-                }
+            if root.sync-mode: Text {
+                x: parent.col2-x;
+                y: parent.label-y;
+                width: parent.knob-size;
+                text: "SYNC";
+                color: #000000;
+                font-size: 12px;
+                font-weight: 600;
+                horizontal-alignment: center;
+            }
 
-                Text {
-                    text: "DIVISION";
-                    color: #000000;
-                    font-size: 10px;
-                    font-weight: 600;
-                    letter-spacing: 2px;
-                    horizontal-alignment: center;
-                }
+            if root.sync-mode: Text {
+                x: parent.col2-x;
+                y: parent.title-y;
+                width: parent.knob-size;
+                text: "DIVISION";
+                color: #000000;
+                font-size: 9px;
+                font-weight: 600;
+                letter-spacing: 2px;
+                horizontal-alignment: center;
+            }
+
+            if root.mode-index == 1: Knob {
+                x: parent.col3-x;
+                y: 0;
+                width: parent.knob-size;
+                height: parent.knob-size;
+                value <=> root.crossover-value;
+                minimum: 0.0;
+                maximum: 1.0;
+                changed(v) => { root.crossover-changed(v); }
+                begin-drag() => { root.crossover-begin-drag(); }
+                end-drag() => { root.crossover-end-drag(); }
+            }
+
+            if root.mode-index == 1: Text {
+                x: parent.col3-x;
+                y: parent.label-y;
+                width: parent.knob-size;
+                text: root.crossover-label;
+                color: #000000;
+                font-size: 12px;
+                font-weight: 600;
+                horizontal-alignment: center;
+            }
+
+            if root.mode-index == 1: Text {
+                x: parent.col3-x;
+                y: parent.title-y;
+                width: parent.knob-size;
+                text: "Crossover";
+                color: #000000;
+                font-size: 9px;
+                font-weight: 600;
+                letter-spacing: 2px;
+                horizontal-alignment: center;
             }
         }
 
@@ -249,6 +317,54 @@ export component AppWindow inherits Window {
                     current-index <=> root.lfo-index;
                     changed(i) => { root.lfo-changed(i); }
                 }
+            }
+        }
+        }
+
+        TouchArea {
+            x: root.width - 18px;
+            y: root.height - 18px;
+            width: 18px;
+            height: 18px;
+            mouse-cursor: nwse-resize;
+
+            property <float> start-width: root.width / 1px;
+            property <float> start-height: root.height / 1px;
+            property <float> start-mouse-x;
+            property <float> start-mouse-y;
+
+            pointer-event(event) => {
+                if (event.button == PointerEventButton.left && event.kind == PointerEventKind.down) {
+                    self.start-width = root.width / 1px;
+                    self.start-height = root.height / 1px;
+                    self.start-mouse-x = self.mouse-x / 1px;
+                    self.start-mouse-y = self.mouse-y / 1px;
+                }
+            }
+
+            moved => {
+                if (self.pressed) {
+                    root.resize-requested(
+                        max(root.min-width / 1px, self.start-width + self.mouse-x / 1px - self.start-mouse-x),
+                        max(root.min-height / 1px, self.start-height + self.mouse-y / 1px - self.start-mouse-y),
+                    );
+                }
+            }
+
+            Rectangle {
+                width: 10px;
+                height: 1px;
+                x: 4px;
+                y: 12px;
+                background: #000000;
+            }
+
+            Rectangle {
+                width: 10px;
+                height: 1px;
+                x: 8px;
+                y: 8px;
+                background: #000000;
             }
         }
     }

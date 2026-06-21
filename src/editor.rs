@@ -22,6 +22,14 @@ pub(crate) fn create(params: Arc<TremoloParams>) -> Option<Box<dyn Editor>> {
                 move |handler, _window| {
                     let component = handler.component();
                     let context = handler.context().clone();
+                    let pending_resizes = handler.pending_resizes().clone();
+
+                    component.on_resize_requested(move |width, height| {
+                        pending_resizes.borrow_mut().push((
+                            (width as u32).max(400),
+                            (height as u32).max(480),
+                        ));
+                    });
 
                     let params_depth = params.clone();
                     let context_depth = context.clone();
@@ -59,6 +67,27 @@ pub(crate) fn create(params: Arc<TremoloParams>) -> Option<Box<dyn Editor>> {
                     let context_rate = context.clone();
                     component.on_rate_end_drag(move || {
                         ParamSetter::new(&*context_rate).end_set_parameter(&params_rate.rate);
+                    });
+
+                    let params_crossover = params.clone();
+                    let context_crossover = context.clone();
+                    component.on_crossover_changed(move |value| {
+                        let setter = ParamSetter::new(&*context_crossover);
+                        setter.begin_set_parameter(&params_crossover.crossover_frequency);
+                        setter.set_parameter_normalized(&params_crossover.crossover_frequency, value);
+                        setter.end_set_parameter(&params_crossover.crossover_frequency);
+                    });
+                    let params_crossover = params.clone();
+                    let context_crossover = context.clone();
+                    component.on_crossover_begin_drag(move || {
+                        ParamSetter::new(&*context_crossover)
+                            .begin_set_parameter(&params_crossover.crossover_frequency);
+                    });
+                    let params_crossover = params.clone();
+                    let context_crossover = context.clone();
+                    component.on_crossover_end_drag(move || {
+                        ParamSetter::new(&*context_crossover)
+                            .end_set_parameter(&params_crossover.crossover_frequency);
                     });
 
                     let params_mode = params.clone();
@@ -118,6 +147,10 @@ pub(crate) fn create(params: Arc<TremoloParams>) -> Option<Box<dyn Editor>> {
                     component.set_depth_label(params.depth.to_string().into());
                     component.set_rate_value(params.rate.modulated_normalized_value());
                     component.set_rate_label(params.rate.to_string().into());
+                    component.set_crossover_value(
+                        params.crossover_frequency.modulated_normalized_value(),
+                    );
+                    component.set_crossover_label(params.crossover_frequency.to_string().into());
                     component.set_mode_index(params.mode.value().to_index() as i32);
                     component.set_rate_mode_index(params.rate_mode.value().to_index() as i32);
                     component.set_lfo_index(params.lfo.value().to_index() as i32);
