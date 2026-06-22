@@ -4,7 +4,9 @@ use nice_plug::prelude::{Editor, Enum, Param, ParamSetter};
 use nice_plug_slint::SlintEditor;
 
 use crate::gui;
-use crate::params::{LfoType, RateMode, SyncDivision, TremoloMode, TremoloParams};
+use crate::params::{LfoType, RateMode, TremoloMode, TremoloParams};
+
+const SYNC_DIVISION_LABELS: [&str; 6] = ["1/1", "1/2", "1/4", "1/8", "1/16", "1/32"];
 
 fn enum_normalized(index: usize, variant_count: usize) -> f32 {
     if variant_count <= 1 {
@@ -116,14 +118,23 @@ pub(crate) fn create(params: Arc<TremoloParams>) -> Option<Box<dyn Editor>> {
 
                     let params_sync = params.clone();
                     let context_sync = context.clone();
-                    component.on_sync_division_changed(move |index| {
+                    component.on_sync_division_changed(move |value| {
                         let setter = ParamSetter::new(&*context_sync);
                         setter.begin_set_parameter(&params_sync.sync_division);
-                        setter.set_parameter_normalized(
-                            &params_sync.sync_division,
-                            enum_normalized(index as usize, SyncDivision::variants().len()),
-                        );
+                        setter.set_parameter_normalized(&params_sync.sync_division, value);
                         setter.end_set_parameter(&params_sync.sync_division);
+                    });
+                    let params_sync = params.clone();
+                    let context_sync = context.clone();
+                    component.on_sync_division_begin_drag(move || {
+                        ParamSetter::new(&*context_sync)
+                            .begin_set_parameter(&params_sync.sync_division);
+                    });
+                    let params_sync = params.clone();
+                    let context_sync = context.clone();
+                    component.on_sync_division_end_drag(move || {
+                        ParamSetter::new(&*context_sync)
+                            .end_set_parameter(&params_sync.sync_division);
                     });
 
                     let params_lfo = params.clone();
@@ -154,8 +165,11 @@ pub(crate) fn create(params: Arc<TremoloParams>) -> Option<Box<dyn Editor>> {
                     component.set_mode_index(params.mode.value().to_index() as i32);
                     component.set_rate_mode_index(params.rate_mode.value().to_index() as i32);
                     component.set_lfo_index(params.lfo.value().to_index() as i32);
-                    component.set_sync_division_index(
-                        params.sync_division.value().to_index() as i32,
+                    component.set_sync_division_value(
+                        params.sync_division.modulated_normalized_value(),
+                    );
+                    component.set_sync_division_label(
+                        SYNC_DIVISION_LABELS[params.sync_division.value().to_index()].into(),
                     );
                     component.set_sync_mode(params.rate_mode.value() == RateMode::Sync);
                 }
