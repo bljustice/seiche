@@ -18,6 +18,10 @@ export component AppWindow inherits Window {
     in-out property <string> crossover-label: "400 Hz";
     in-out property <float> sync-division-value: 0.4;
     in-out property <string> sync-division-label: "1/4";
+    in-out property <float> bias-value: 0.5;
+    in-out property <string> bias-label: "0.20";
+    in-out property <float> flip-probability-value: 0.3;
+    in-out property <string> flip-probability-label: "30 %";
     in-out property <int> mode-index: 0;
     in-out property <int> rate-mode-index: 0;
     in-out property <int> lfo-index: 0;
@@ -37,6 +41,12 @@ export component AppWindow inherits Window {
     callback sync-division-changed(float);
     callback sync-division-begin-drag();
     callback sync-division-end-drag();
+    callback bias-changed(float);
+    callback bias-begin-drag();
+    callback bias-end-drag();
+    callback flip-probability-changed(float);
+    callback flip-probability-begin-drag();
+    callback flip-probability-end-drag();
     callback lfo-changed(int);
     callback resize-requested(float, float);
 
@@ -214,6 +224,87 @@ export component AppWindow inherits Window {
                 y: parent.title-y;
                 width: parent.knob-size;
                 text: "Crossover";
+                color: #000000;
+                font-size: 9px;
+                letter-spacing: 2px;
+                horizontal-alignment: center;
+            }
+        }
+
+        if root.lfo-index == 2: random-knobs := Rectangle {
+            width: root.width - 48px;
+            height: knob-row.knob-size + 44px;
+
+            property <length> knob-size: knob-row.knob-size;
+            property <length> knob-gap: 20px;
+            property <length> row-width: 2 * self.knob-size + self.knob-gap;
+            property <length> origin-x: (self.width - self.row-width) / 2;
+            property <length> col2-x: self.origin-x + self.knob-size + self.knob-gap;
+            property <length> label-y: self.knob-size + 6px;
+            property <length> title-y: self.knob-size + 22px;
+
+            Knob {
+                x: parent.origin-x;
+                y: 0;
+                width: parent.knob-size;
+                height: parent.knob-size;
+                value <=> root.bias-value;
+                minimum: 0.0;
+                maximum: 1.0;
+                changed(v) => { root.bias-changed(v); }
+                begin-drag() => { root.bias-begin-drag(); }
+                end-drag() => { root.bias-end-drag(); }
+            }
+
+            Text {
+                x: parent.origin-x;
+                y: parent.label-y;
+                width: parent.knob-size;
+                text: root.bias-label;
+                color: #000000;
+                font-size: 12px;
+                horizontal-alignment: center;
+            }
+
+            Text {
+                x: parent.origin-x;
+                y: parent.title-y;
+                width: parent.knob-size;
+                text: "Bias";
+                color: #000000;
+                font-size: 9px;
+                letter-spacing: 2px;
+                horizontal-alignment: center;
+            }
+
+            Knob {
+                x: parent.col2-x;
+                y: 0;
+                width: parent.knob-size;
+                height: parent.knob-size;
+                value <=> root.flip-probability-value;
+                minimum: 0.0;
+                maximum: 1.0;
+                changed(v) => { root.flip-probability-changed(v); }
+                begin-drag() => { root.flip-probability-begin-drag(); }
+                end-drag() => { root.flip-probability-end-drag(); }
+            }
+
+            Text {
+                x: parent.col2-x;
+                y: parent.label-y;
+                width: parent.knob-size;
+                text: root.flip-probability-label;
+                color: #000000;
+                font-size: 12px;
+                horizontal-alignment: center;
+            }
+
+            Text {
+                x: parent.col2-x;
+                y: parent.title-y;
+                width: parent.knob-size;
+                text: "Flip";
                 color: #000000;
                 font-size: 9px;
                 letter-spacing: 2px;

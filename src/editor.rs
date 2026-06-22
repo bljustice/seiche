@@ -137,6 +137,46 @@ pub(crate) fn create(params: Arc<TremoloParams>) -> Option<Box<dyn Editor>> {
                             .end_set_parameter(&params_sync.sync_division);
                     });
 
+                    let params_bias = params.clone();
+                    let context_bias = context.clone();
+                    component.on_bias_changed(move |value| {
+                        let setter = ParamSetter::new(&*context_bias);
+                        setter.begin_set_parameter(&params_bias.bias);
+                        setter.set_parameter_normalized(&params_bias.bias, value);
+                        setter.end_set_parameter(&params_bias.bias);
+                    });
+                    let params_bias = params.clone();
+                    let context_bias = context.clone();
+                    component.on_bias_begin_drag(move || {
+                        ParamSetter::new(&*context_bias).begin_set_parameter(&params_bias.bias);
+                    });
+                    let params_bias = params.clone();
+                    let context_bias = context.clone();
+                    component.on_bias_end_drag(move || {
+                        ParamSetter::new(&*context_bias).end_set_parameter(&params_bias.bias);
+                    });
+
+                    let params_flip = params.clone();
+                    let context_flip = context.clone();
+                    component.on_flip_probability_changed(move |value| {
+                        let setter = ParamSetter::new(&*context_flip);
+                        setter.begin_set_parameter(&params_flip.flip_probability);
+                        setter.set_parameter_normalized(&params_flip.flip_probability, value);
+                        setter.end_set_parameter(&params_flip.flip_probability);
+                    });
+                    let params_flip = params.clone();
+                    let context_flip = context.clone();
+                    component.on_flip_probability_begin_drag(move || {
+                        ParamSetter::new(&*context_flip)
+                            .begin_set_parameter(&params_flip.flip_probability);
+                    });
+                    let params_flip = params.clone();
+                    let context_flip = context.clone();
+                    component.on_flip_probability_end_drag(move || {
+                        ParamSetter::new(&*context_flip)
+                            .end_set_parameter(&params_flip.flip_probability);
+                    });
+
                     let params_lfo = params.clone();
                     let context_lfo = context;
                     component.on_lfo_changed(move |index| {
@@ -172,6 +212,12 @@ pub(crate) fn create(params: Arc<TremoloParams>) -> Option<Box<dyn Editor>> {
                         SYNC_DIVISION_LABELS[params.sync_division.value().to_index()].into(),
                     );
                     component.set_sync_mode(params.rate_mode.value() == RateMode::Sync);
+                    component.set_bias_value(params.bias.modulated_normalized_value());
+                    component.set_bias_label(params.bias.to_string().into());
+                    component.set_flip_probability_value(
+                        params.flip_probability.modulated_normalized_value(),
+                    );
+                    component.set_flip_probability_label(params.flip_probability.to_string().into());
                 }
             }),
     ))
