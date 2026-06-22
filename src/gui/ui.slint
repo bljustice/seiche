@@ -166,7 +166,7 @@ export component AppWindow inherits Window {
                     spacing: 4px;
 
                     for div[i] in ["1/1", "1/2", "1/4", "1/8", "1/16", "1/32"]: Rectangle {
-                        height: 11px;
+                        height: 15px;
                         border-radius: 2px;
                         background: root.sync-division-index == i ? #000000 : #ffffff;
                         border-width: 1px;
@@ -175,7 +175,7 @@ export component AppWindow inherits Window {
                         Text {
                             text: div;
                             color: root.sync-division-index == i ? #ffffff : #000000;
-                            font-size: 7px;
+                            font-size: 10px;
                             horizontal-alignment: center;
                             vertical-alignment: center;
                         }

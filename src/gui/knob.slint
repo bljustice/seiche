@@ -13,18 +13,7 @@ export component Knob inherits Rectangle {
     property <float> knob-scale: root.width / 180px;
     property <float> norm-value: (value - minimum) / (maximum - minimum);
     property <angle> arc-progress: 0.75turn + norm-value * 0.5turn;
-
-    Rectangle {
-        width: root.width;
-        height: root.height;
-        x: 0;
-        y: 0;
-        border-radius: self.width / 2;
-        background: transparent;
-        border-color: rgba(0, 0, 0, root.norm-value * 0.2);
-        border-width: 6px * root.knob-scale;
-    }
-
+    
     Rectangle {
         width: root.width * 0.62;
         height: root.height * 0.62;
