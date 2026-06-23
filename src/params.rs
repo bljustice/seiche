@@ -103,7 +103,7 @@ pub struct TremoloParams {
 impl TremoloParams {
     pub fn new() -> Self {
         Self {
-            editor_state: Arc::new(SlintEditorState::new(480, 520)),
+            editor_state: Arc::new(SlintEditorState::new(480, 800)),
             mode: EnumParam::new("Mode", TremoloMode::Classic),
             depth: FloatParam::new(
                 "Depth",

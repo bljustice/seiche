@@ -29,7 +29,7 @@ pub(crate) fn create(params: Arc<TremoloParams>) -> Option<Box<dyn Editor>> {
                     component.on_resize_requested(move |width, height| {
                         pending_resizes.borrow_mut().push((
                             (width as u32).max(400),
-                            (height as u32).max(480),
+                            (height as u32).max(800),
                         ));
                     });
 
