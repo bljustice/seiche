@@ -89,7 +89,7 @@ export component AppWindow inherits Window {
                 property <int> knob-count: root.mode-index == 1 ? 3 : 2;
                 property <length> knob-gap: self.knob-count == 3 ? 10px : 20px;
                 property <length> knob-size: min(
-                    120px,
+                    100px,
                     max(
                         72px,
                         (self.width - (self.knob-count - 1) * self.knob-gap) / self.knob-count,
