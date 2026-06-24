@@ -14,6 +14,8 @@ export component AppWindow inherits Window {
     in-out property <string> depth-label: "50 %";
     in-out property <float> rate-value: 0.5;
     in-out property <string> rate-label: "4.00 Hz";
+    in-out property <float> jitter-value: 0.1;
+    in-out property <string> jitter-label: "10 %";
     in-out property <float> crossover-value: 0.5;
     in-out property <string> crossover-label: "400 Hz";
     in-out property <float> sync-division-value: 0.4;
@@ -33,6 +35,9 @@ export component AppWindow inherits Window {
     callback rate-changed(float);
     callback rate-begin-drag();
     callback rate-end-drag();
+    callback jitter-changed(float);
+    callback jitter-begin-drag();
+    callback jitter-end-drag();
     callback crossover-changed(float);
     callback crossover-begin-drag();
     callback crossover-end-drag();
@@ -94,8 +99,8 @@ export component AppWindow inherits Window {
                     width: root.width - 48px;
                     height: self.knob-size + 44px;
 
-                    property <int> knob-count: root.mode-index == 1 ? 3 : 2;
-                    property <length> knob-gap: self.knob-count == 3 ? 10px : 20px;
+                    property <int> knob-count: root.mode-index == 1 ? 4 : 3;
+                    property <length> knob-gap: self.knob-count == 34 ? 8px : 12px;
                     property <length> knob-size: min(
                         100px,
                         max(
@@ -107,6 +112,7 @@ export component AppWindow inherits Window {
                     property <length> origin-x: (self.width - self.row-width) / 2;
                     property <length> col2-x: self.origin-x + self.knob-size + self.knob-gap;
                     property <length> col3-x: self.origin-x + 2 * (self.knob-size + self.knob-gap);
+                    property <length> col4-x: self.origin-x + 3 * (self.knob-size + self.knob-gap);
                     property <length> label-y: self.knob-size + 6px;
                     property <length> title-y: self.knob-size + 22px;
 
@@ -144,8 +150,42 @@ export component AppWindow inherits Window {
                         horizontal-alignment: center;
                     }
 
-                    if !root.sync-mode: Knob {
+                    Knob {
                         x: parent.col2-x;
+                        y: 0;
+                        width: parent.knob-size;
+                        height: parent.knob-size;
+                        value <=> root.jitter-value;
+                        minimum: 0.0;
+                        maximum: 1.0;
+                        changed(v) => { root.jitter-changed(v); }
+                        begin-drag() => { root.jitter-begin-drag(); }
+                        end-drag() => { root.jitter-end-drag(); }
+                    }
+
+                    Text {
+                        x: parent.col2-x;
+                        y: parent.label-y;
+                        width: parent.knob-size;
+                        text: root.jitter-label;
+                        color: #000000;
+                        font-size: 12px;
+                        horizontal-alignment: center;
+                    }
+
+                    Text {
+                        x: parent.col2-x;
+                        y: parent.title-y;
+                        width: parent.knob-size;
+                        text: "Jitter";
+                        color: #000000;
+                        font-size: 9px;
+                        letter-spacing: 2px;
+                        horizontal-alignment: center;
+                    }
+
+                    if !root.sync-mode: Knob {
+                        x: parent.col3-x;
                         y: 0;
                         width: parent.knob-size;
                         height: parent.knob-size;
@@ -158,7 +198,7 @@ export component AppWindow inherits Window {
                     }
 
                     if !root.sync-mode: Text {
-                        x: parent.col2-x;
+                        x: parent.col3-x;
                         y: parent.label-y;
                         width: parent.knob-size;
                         text: root.rate-label;
@@ -168,7 +208,7 @@ export component AppWindow inherits Window {
                     }
 
                     if !root.sync-mode: Text {
-                        x: parent.col2-x;
+                        x: parent.col3-x;
                         y: parent.title-y;
                         width: parent.knob-size;
                         text: "Rate";
@@ -179,7 +219,7 @@ export component AppWindow inherits Window {
                     }
 
                     if root.sync-mode: Knob {
-                        x: parent.col2-x;
+                        x: parent.col3-x;
                         y: 0;
                         width: parent.knob-size;
                         height: parent.knob-size;
@@ -192,7 +232,7 @@ export component AppWindow inherits Window {
                     }
 
                     if root.sync-mode: Text {
-                        x: parent.col2-x;
+                        x: parent.col3-x;
                         y: parent.label-y;
                         width: parent.knob-size;
                         text: root.sync-division-label;
@@ -202,7 +242,7 @@ export component AppWindow inherits Window {
                     }
 
                     if root.sync-mode: Text {
-                        x: parent.col2-x;
+                            x: parent.col3-x;
                         y: parent.title-y;
                         width: parent.knob-size;
                         text: "Sync";
@@ -213,7 +253,7 @@ export component AppWindow inherits Window {
                     }
 
                     if root.mode-index == 1: Knob {
-                        x: parent.col3-x;
+                        x: parent.col4-x;
                         y: 0;
                         width: parent.knob-size;
                         height: parent.knob-size;
@@ -226,7 +266,7 @@ export component AppWindow inherits Window {
                     }
 
                     if root.mode-index == 1: Text {
-                        x: parent.col3-x;
+                        x: parent.col4-x;
                         y: parent.label-y;
                         width: parent.knob-size;
                         text: root.crossover-label;
@@ -236,7 +276,7 @@ export component AppWindow inherits Window {
                     }
 
                     if root.mode-index == 1: Text {
-                        x: parent.col3-x;
+                        x: parent.col4-x;
                         y: parent.title-y;
                         width: parent.knob-size;
                         text: "Crossover";

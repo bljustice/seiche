@@ -52,6 +52,15 @@ pub(crate) fn create(params: Arc<TremoloParams>) -> Option<Box<dyn Editor>> {
                         ParamSetter::new(&*context_depth).end_set_parameter(&params_depth.depth);
                     });
 
+                    let params_jitter = params.clone();
+                    let context_jitter = context.clone();
+                    component.on_jitter_changed(move |value| {
+                        let setter = ParamSetter::new(&*context_jitter);
+                        setter.begin_set_parameter(&params_jitter.jitter);
+                        setter.set_parameter_normalized(&params_jitter.jitter, value);
+                        setter.end_set_parameter(&params_jitter.jitter);
+                    });
+
                     let params_rate = params.clone();
                     let context_rate = context.clone();
                     component.on_rate_changed(move |value| {
@@ -198,6 +207,8 @@ pub(crate) fn create(params: Arc<TremoloParams>) -> Option<Box<dyn Editor>> {
                     component.set_depth_label(params.depth.to_string().into());
                     component.set_rate_value(params.rate.modulated_normalized_value());
                     component.set_rate_label(params.rate.to_string().into());
+                    component.set_jitter_value(params.jitter.modulated_normalized_value());
+                    component.set_jitter_label(params.jitter.to_string().into());
                     component.set_crossover_value(
                         params.crossover_frequency.modulated_normalized_value(),
                     );
