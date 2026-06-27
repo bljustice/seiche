@@ -1,0 +1,197 @@
+component SineWave inherits Path {
+    viewbox-width: 100;
+    viewbox-height: 40;
+    width: 100%;
+    height: 100%;
+    stroke: #000000;
+    stroke-width: 2.5px;
+    fill: transparent;
+
+    // Sampled from y = 20 - 12*sin(720deg * x/100), two cycles
+    MoveTo { x: 0; y: 20; }
+    LineTo { x: 2; y: 17.0; }
+    LineTo { x: 4; y: 14.2; }
+    LineTo { x: 6; y: 11.8; }
+    LineTo { x: 8; y: 9.9; }
+    LineTo { x: 10; y: 8.6; }
+    LineTo { x: 12; y: 8.0; }
+    LineTo { x: 14; y: 8.2; }
+    LineTo { x: 16; y: 9.1; }
+    LineTo { x: 18; y: 10.8; }
+    LineTo { x: 20; y: 12.9; }
+    LineTo { x: 22; y: 15.6; }
+    LineTo { x: 24; y: 18.5; }
+    LineTo { x: 26; y: 21.5; }
+    LineTo { x: 28; y: 24.4; }
+    LineTo { x: 30; y: 27.1; }
+    LineTo { x: 32; y: 29.2; }
+    LineTo { x: 34; y: 30.9; }
+    LineTo { x: 36; y: 31.8; }
+    LineTo { x: 38; y: 32.0; }
+    LineTo { x: 40; y: 31.4; }
+    LineTo { x: 42; y: 30.1; }
+    LineTo { x: 44; y: 28.2; }
+    LineTo { x: 46; y: 25.8; }
+    LineTo { x: 48; y: 23.0; }
+    LineTo { x: 50; y: 20.0; }
+    LineTo { x: 52; y: 17.0; }
+    LineTo { x: 54; y: 14.2; }
+    LineTo { x: 56; y: 11.8; }
+    LineTo { x: 58; y: 9.9; }
+    LineTo { x: 60; y: 8.6; }
+    LineTo { x: 62; y: 8.0; }
+    LineTo { x: 64; y: 8.2; }
+    LineTo { x: 66; y: 9.1; }
+    LineTo { x: 68; y: 10.8; }
+    LineTo { x: 70; y: 12.9; }
+    LineTo { x: 72; y: 15.6; }
+    LineTo { x: 74; y: 18.5; }
+    LineTo { x: 76; y: 21.5; }
+    LineTo { x: 78; y: 24.4; }
+    LineTo { x: 80; y: 27.1; }
+    LineTo { x: 82; y: 29.2; }
+    LineTo { x: 84; y: 30.9; }
+    LineTo { x: 86; y: 31.8; }
+    LineTo { x: 88; y: 32.0; }
+    LineTo { x: 90; y: 31.4; }
+    LineTo { x: 92; y: 30.1; }
+    LineTo { x: 94; y: 28.2; }
+    LineTo { x: 96; y: 25.8; }
+    LineTo { x: 98; y: 23.0; }
+    LineTo { x: 100; y: 20.0; }
+}
+
+component SquareWave inherits Path {
+    viewbox-width: 100;
+    viewbox-height: 40;
+    width: 100%;
+    height: 100%;
+    stroke: #000000;
+    stroke-width: 2.5px;
+    fill: transparent;
+    MoveTo { x: 0; y: 10; }
+    LineTo { x: 22; y: 10; }
+    LineTo { x: 22; y: 30; }
+    LineTo { x: 50; y: 30; }
+    LineTo { x: 50; y: 10; }
+    LineTo { x: 78; y: 10; }
+    LineTo { x: 78; y: 30; }
+    LineTo { x: 100; y: 30; }
+}
+
+component RandomWave inherits Path {
+    viewbox-width: 100;
+    viewbox-height: 40;
+    width: 100%;
+    height: 100%;
+    stroke: #000000;
+    stroke-width: 2.5px;
+    fill: transparent;
+    MoveTo { x: 0; y: 22; }
+    LineTo { x: 14; y: 12; }
+    LineTo { x: 28; y: 28; }
+    LineTo { x: 42; y: 8; }
+    LineTo { x: 56; y: 32; }
+    LineTo { x: 70; y: 14; }
+    LineTo { x: 84; y: 26; }
+    LineTo { x: 100; y: 18; }
+}
+
+component RampWave inherits Path {
+    viewbox-width: 100;
+    viewbox-height: 40;
+    width: 100%;
+    height: 100%;
+    stroke: #000000;
+    stroke-width: 2.5px;
+    fill: transparent;
+    MoveTo { x: 0; y: 32; }
+    LineTo { x: 33; y: 8; }
+    LineTo { x: 33; y: 32; }
+    LineTo { x: 66; y: 8; }
+    LineTo { x: 66; y: 32; }
+    LineTo { x: 100; y: 8; }
+}
+
+export component LfoIcon inherits Rectangle {
+    in property <int> waveform: 0;
+    width: 48px;
+    height: 20px;
+
+    if root.waveform == 0: SineWave { }
+    if root.waveform == 1: SquareWave { }
+    if root.waveform == 2: RandomWave { }
+    if root.waveform == 3: RampWave { }
+}
+
+export component LfoPicker inherits Rectangle {
+    in-out property <int> current-index: 0;
+    callback changed(int);
+    property <bool> open: false;
+
+    width: 140px;
+    height: 36px;
+
+    Rectangle {
+        width: 100%;
+        height: 100%;
+        background: #ffffff;
+        border-radius: 4px;
+        border-width: 1px;
+        border-color: #000000;
+
+        HorizontalLayout {
+            alignment: center;
+            padding-left: 10px;
+            padding-right: 10px;
+            padding-top: 9px;
+
+            LfoIcon {
+                width: 56px;
+                waveform: root.current-index;
+            }
+        }
+
+        TouchArea {
+            clicked => {
+                root.open = !root.open;
+            }
+        }
+    }
+
+    if root.open: VerticalLayout {
+        padding: 4px;
+        spacing: 2px;
+
+        for idx[i] in [0, 1, 2, 3]: Rectangle {
+            height: 20px;
+            border-radius: 3px;
+            background: root.current-index == idx ? #e0e0e0 : #ffffff;
+            border-width: 1px;
+            border-color: #000000;
+
+            HorizontalLayout {
+                width: 100%;
+                height: 100%;
+                alignment: center;
+                padding-top: 5px;
+
+                LfoIcon {
+                    width: 56px;
+                    height: 16px;
+                    waveform: idx;
+                }
+            }
+
+            TouchArea {
+                width: 100%;
+                height: 100%;
+                clicked => {
+                    root.current-index = idx;
+                    root.changed(idx);
+                    root.open = false;
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,485 @@
+import { Knob } from "knob.slint";
+import { SegmentedControl } from "segmented.slint";
+import { LfoPicker } from "lfo_icon.slint";
+
+export component AppWindow inherits Window {
+
+    default-font-weight: FontWeight.thin;
+    preferred-width: 480px;
+    preferred-height: 800px;
+    min-width: 400px;
+    min-height: 800px;
+
+    in-out property <float> depth-value: 0.5;
+    in-out property <string> depth-label: "50 %";
+    in-out property <float> rate-value: 0.5;
+    in-out property <string> rate-label: "4.00 Hz";
+    in-out property <float> jitter-value: 0.1;
+    in-out property <string> jitter-label: "10 %";
+    in-out property <float> crossover-value: 0.5;
+    in-out property <string> crossover-label: "400 Hz";
+    in-out property <float> sync-division-value: 0.4;
+    in-out property <string> sync-division-label: "1/4";
+    in-out property <float> bias-value: 0.5;
+    in-out property <string> bias-label: "0.20";
+    in-out property <float> flip-probability-value: 0.3;
+    in-out property <string> flip-probability-label: "30 %";
+    in-out property <int> mode-index: 0;
+    in-out property <int> rate-mode-index: 0;
+    in-out property <int> lfo-index: 0;
+    in-out property <bool> sync-mode: false;
+
+    callback depth-changed(float);
+    callback depth-begin-drag();
+    callback depth-end-drag();
+    callback rate-changed(float);
+    callback rate-begin-drag();
+    callback rate-end-drag();
+    callback jitter-changed(float);
+    callback jitter-begin-drag();
+    callback jitter-end-drag();
+    callback crossover-changed(float);
+    callback crossover-begin-drag();
+    callback crossover-end-drag();
+    callback mode-changed(int);
+    callback rate-mode-changed(int);
+    callback sync-division-changed(float);
+    callback sync-division-begin-drag();
+    callback sync-division-end-drag();
+    callback bias-changed(float);
+    callback bias-begin-drag();
+    callback bias-end-drag();
+    callback flip-probability-changed(float);
+    callback flip-probability-begin-drag();
+    callback flip-probability-end-drag();
+    callback lfo-changed(int);
+    callback resize-requested(float, float);
+    
+    background: #c8dff5;
+    
+    Rectangle {
+        width: 100%;
+        height: 100%;
+        
+        VerticalLayout {
+            padding-top: 6px;
+            padding-left: 20px;
+            padding-right: 20px;
+            padding-bottom: 20px;
+            spacing: 14px;
+            alignment: center;
+
+            Image {
+                source: @image-url("./assets/water.svg");
+                width: 100%;
+                height: 32px;
+                image-fit: contain;
+                padding-bottom: 2px;
+            }
+            
+            Text {
+                text: "SEICHE";
+                color: #000000;
+                font-size: 14px;
+                letter-spacing: 4px;
+                horizontal-alignment: center;
+            }
+
+            Rectangle {
+                height: 1px;
+                background: rgba(0, 0, 0, 0.15);
+            }
+
+            VerticalLayout {
+                spacing: 2px;
+                width: 100%;
+                alignment: center;
+
+                knob-row := Rectangle {
+                    width: root.width - 48px;
+                    height: self.knob-size + 44px;
+
+                    property <int> knob-count: root.mode-index == 1 ? 4 : 3;
+                    property <length> knob-gap: self.knob-count == 34 ? 8px : 12px;
+                    property <length> knob-size: min(
+                        100px,
+                        max(
+                            72px,
+                            (self.width - (self.knob-count - 1) * self.knob-gap) / self.knob-count,
+                        ),
+                    );
+                    property <length> row-width: self.knob-count * self.knob-size + (self.knob-count - 1) * self.knob-gap;
+                    property <length> origin-x: (self.width - self.row-width) / 2;
+                    property <length> col2-x: self.origin-x + self.knob-size + self.knob-gap;
+                    property <length> col3-x: self.origin-x + 2 * (self.knob-size + self.knob-gap);
+                    property <length> col4-x: self.origin-x + 3 * (self.knob-size + self.knob-gap);
+                    property <length> label-y: self.knob-size + 6px;
+                    property <length> title-y: self.knob-size + 22px;
+
+                    Knob {
+                        x: parent.origin-x;
+                        y: 0;
+                        width: parent.knob-size;
+                        height: parent.knob-size;
+                        value <=> root.depth-value;
+                        minimum: 0.0;
+                        maximum: 1.0;
+                        changed(v) => { root.depth-changed(v); }
+                        begin-drag() => { root.depth-begin-drag(); }
+                        end-drag() => { root.depth-end-drag(); }
+                    }
+
+                    Text {
+                        x: parent.origin-x;
+                        y: parent.label-y;
+                        width: parent.knob-size;
+                        text: root.depth-label;
+                        color: #000000;
+                        font-size: 12px;
+                        horizontal-alignment: center;
+                    }
+
+                    Text {
+                        x: parent.origin-x;
+                        y: parent.title-y;
+                        width: parent.knob-size;
+                        text: "Depth";
+                        color: #000000;
+                        font-size: 9px;
+                        letter-spacing: 2px;
+                        horizontal-alignment: center;
+                    }
+
+                    Knob {
+                        x: parent.col2-x;
+                        y: 0;
+                        width: parent.knob-size;
+                        height: parent.knob-size;
+                        value <=> root.jitter-value;
+                        minimum: 0.0;
+                        maximum: 1.0;
+                        changed(v) => { root.jitter-changed(v); }
+                        begin-drag() => { root.jitter-begin-drag(); }
+                        end-drag() => { root.jitter-end-drag(); }
+                    }
+
+                    Text {
+                        x: parent.col2-x;
+                        y: parent.label-y;
+                        width: parent.knob-size;
+                        text: root.jitter-label;
+                        color: #000000;
+                        font-size: 12px;
+                        horizontal-alignment: center;
+                    }
+
+                    Text {
+                        x: parent.col2-x;
+                        y: parent.title-y;
+                        width: parent.knob-size;
+                        text: "Jitter";
+                        color: #000000;
+                        font-size: 9px;
+                        letter-spacing: 2px;
+                        horizontal-alignment: center;
+                    }
+
+                    if !root.sync-mode: Knob {
+                        x: parent.col3-x;
+                        y: 0;
+                        width: parent.knob-size;
+                        height: parent.knob-size;
+                        value <=> root.rate-value;
+                    minimum: 0.0;
+                    maximum: 1.0;
+                    changed(v) => { root.rate-changed(v); }
+                    begin-drag() => { root.rate-begin-drag(); }
+                    end-drag() => { root.rate-end-drag(); }
+                    }
+
+                    if !root.sync-mode: Text {
+                        x: parent.col3-x;
+                        y: parent.label-y;
+                        width: parent.knob-size;
+                        text: root.rate-label;
+                        color: #000000;
+                        font-size: 12px;
+                        horizontal-alignment: center;
+                    }
+
+                    if !root.sync-mode: Text {
+                        x: parent.col3-x;
+                        y: parent.title-y;
+                        width: parent.knob-size;
+                        text: "Rate";
+                        color: #000000;
+                        font-size: 9px;
+                        letter-spacing: 2px;
+                        horizontal-alignment: center;
+                    }
+
+                    if root.sync-mode: Knob {
+                        x: parent.col3-x;
+                        y: 0;
+                        width: parent.knob-size;
+                        height: parent.knob-size;
+                        value <=> root.sync-division-value;
+                        minimum: 0.0;
+                        maximum: 1.0;
+                        changed(v) => { root.sync-division-changed(v); }
+                        begin-drag() => { root.sync-division-begin-drag(); }
+                        end-drag() => { root.sync-division-end-drag(); }
+                    }
+
+                    if root.sync-mode: Text {
+                        x: parent.col3-x;
+                        y: parent.label-y;
+                        width: parent.knob-size;
+                        text: root.sync-division-label;
+                        color: #000000;
+                        font-size: 12px;
+                        horizontal-alignment: center;
+                    }
+
+                    if root.sync-mode: Text {
+                            x: parent.col3-x;
+                        y: parent.title-y;
+                        width: parent.knob-size;
+                        text: "Sync";
+                        color: #000000;
+                        font-size: 9px;
+                        letter-spacing: 2px;
+                        horizontal-alignment: center;
+                    }
+
+                    if root.mode-index == 1: Knob {
+                        x: parent.col4-x;
+                        y: 0;
+                        width: parent.knob-size;
+                        height: parent.knob-size;
+                        value <=> root.crossover-value;
+                        minimum: 0.0;
+                        maximum: 1.0;
+                        changed(v) => { root.crossover-changed(v); }
+                        begin-drag() => { root.crossover-begin-drag(); }
+                        end-drag() => { root.crossover-end-drag(); }
+                    }
+
+                    if root.mode-index == 1: Text {
+                        x: parent.col4-x;
+                        y: parent.label-y;
+                        width: parent.knob-size;
+                        text: root.crossover-label;
+                        color: #000000;
+                        font-size: 12px;
+                        horizontal-alignment: center;
+                    }
+
+                    if root.mode-index == 1: Text {
+                        x: parent.col4-x;
+                        y: parent.title-y;
+                        width: parent.knob-size;
+                        text: "Crossover";
+                        color: #000000;
+                        font-size: 9px;
+                        letter-spacing: 2px;
+                        horizontal-alignment: center;
+                    }
+                }
+
+                if root.lfo-index == 2: random-knobs := Rectangle {
+                    width: root.width - 48px;
+                    height: knob-row.knob-size + 44px;
+
+                    property <length> knob-size: knob-row.knob-size;
+                    property <length> knob-gap: 16px;
+                    property <length> row-width: 2 * self.knob-size + self.knob-gap;
+                    property <length> origin-x: (self.width - self.row-width) / 2;
+                    property <length> col2-x: self.origin-x + self.knob-size + self.knob-gap;
+                    property <length> label-y: self.knob-size + 6px;
+                    property <length> title-y: self.knob-size + 22px;
+
+                    Knob {
+                        x: parent.origin-x;
+                        y: 0;
+                        width: parent.knob-size;
+                        height: parent.knob-size;
+                        value <=> root.bias-value;
+                        minimum: 0.0;
+                        maximum: 1.0;
+                        changed(v) => { root.bias-changed(v); }
+                        begin-drag() => { root.bias-begin-drag(); }
+                        end-drag() => { root.bias-end-drag(); }
+                    }
+
+                    Text {
+                        x: parent.origin-x;
+                        y: parent.label-y;
+                        width: parent.knob-size;
+                        text: root.bias-label;
+                        color: #000000;
+                        font-size: 12px;
+                        horizontal-alignment: center;
+                    }
+
+                    Text {
+                        x: parent.origin-x;
+                        y: parent.title-y;
+                        width: parent.knob-size;
+                        text: "Bias";
+                        color: #000000;
+                        font-size: 9px;
+                        letter-spacing: 2px;
+                        horizontal-alignment: center;
+                    }
+
+                    Knob {
+                        x: parent.col2-x;
+                        y: 0;
+                        width: parent.knob-size;
+                        height: parent.knob-size;
+                        value <=> root.flip-probability-value;
+                        minimum: 0.0;
+                        maximum: 1.0;
+                        changed(v) => { root.flip-probability-changed(v); }
+                        begin-drag() => { root.flip-probability-begin-drag(); }
+                        end-drag() => { root.flip-probability-end-drag(); }
+                    }
+
+                    Text {
+                        x: parent.col2-x;
+                        y: parent.label-y;
+                        width: parent.knob-size;
+                        text: root.flip-probability-label;
+                        color: #000000;
+                        font-size: 12px;
+                        horizontal-alignment: center;
+                    }
+
+                    Text {
+                        x: parent.col2-x;
+                        y: parent.title-y;
+                        width: parent.knob-size;
+                        text: "Flip";
+                        color: #000000;
+                        font-size: 9px;
+                        letter-spacing: 2px;
+                        horizontal-alignment: center;
+                    }
+                }
+            }
+
+            VerticalLayout {
+                spacing: 8px;
+                alignment: center;
+                width: 100%;
+
+                Text {
+                    text: "MODE";
+                    color: #000000;
+                    font-size: 10px;
+                    letter-spacing: 2px;
+                    horizontal-alignment: center;
+                }
+
+                SegmentedControl {
+                    options: ["Classic", "Harmonic"];
+                    current-index <=> root.mode-index;
+                    selected(i) => { root.mode-changed(i); }
+                }
+            }
+
+            VerticalLayout {
+                spacing: 8px;
+                alignment: center;
+                width: 100%;
+
+                Text {
+                    text: "TEMPO";
+                    color: #000000;
+                    font-size: 10px;
+                    letter-spacing: 2px;
+                    horizontal-alignment: center;
+                }
+
+                SegmentedControl {
+                    options: ["Free", "Sync"];
+                    current-index <=> root.rate-mode-index;
+                    selected(i) => { root.rate-mode-changed(i); }
+                }
+            }
+
+            VerticalLayout {
+                spacing: 8px;
+                alignment: center;
+                width: 100%;
+
+                Text {
+                    text: "LFO";
+                    color: #000000;
+                    font-size: 10px;
+                    letter-spacing: 2px;
+                    horizontal-alignment: center;
+                }
+
+                HorizontalLayout {
+                    alignment: center;
+                    width: 100%;
+
+                    LfoPicker {
+                        current-index <=> root.lfo-index;
+                        changed(i) => { root.lfo-changed(i); }
+                    }
+                }
+
+            }
+        }
+
+        TouchArea {
+            x: root.width - 18px;
+            y: root.height - 18px;
+            width: 18px;
+            height: 18px;
+            mouse-cursor: nwse-resize;
+
+            property <float> start-width: root.width / 1px;
+            property <float> start-height: root.height / 1px;
+            property <float> start-mouse-x;
+            property <float> start-mouse-y;
+
+            pointer-event(event) => {
+                if (event.button == PointerEventButton.left && event.kind == PointerEventKind.down) {
+                    self.start-width = root.width / 1px;
+                    self.start-height = root.height / 1px;
+                    self.start-mouse-x = self.mouse-x / 1px;
+                    self.start-mouse-y = self.mouse-y / 1px;
+                }
+            }
+
+            moved => {
+                if (self.pressed) {
+                    root.resize-requested(
+                        max(root.min-width / 1px, self.start-width + self.mouse-x / 1px - self.start-mouse-x),
+                        max(root.min-height / 1px, self.start-height + self.mouse-y / 1px - self.start-mouse-y),
+                    );
+                }
+            }
+
+            Rectangle {
+                width: 10px;
+                height: 1px;
+                x: 4px;
+                y: 12px;
+                background: #000000;
+            }
+
+            Rectangle {
+                width: 10px;
+                height: 1px;
+                x: 8px;
+                y: 8px;
+                background: #000000;
+            }
+        }
+    }
+}
