@@ -1,0 +1,81 @@
+name: test-plugin-build
+
+on:
+  pull_request:
+    paths:
+      - '**'
+      - '!plugin.png'
+      - '!README.md'
+      - '!.gitignore'
+      - '!LICENSE'
+      - '!build_plugin.sh'
+    branches:
+      - main
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        include:
+          - { name: ubuntu-22.04,       os: ubuntu-22.04,   cross-target: '' }
+          - { name: macos-universal,    os: macos-15,       cross-target: '' }
+          - { name: windows,            os: windows-latest, cross-target: '' }
+    name: Test plugin builds
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install dependencies
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev libgl-dev libjack-dev libxcb1-dev libxcb-icccm4-dev libxcursor-dev libxkbcommon-dev libxcb-shape0-dev libxcb-xfixes0-dev libx11-dev libxcb-dri2-0 libxcb-dri2-0-dev libx11-xcb-dev
+      - uses: actions/cache@v4
+        if: startsWith(matrix.os, 'windows')
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+          key: test-${{ matrix.name }}-${{ matrix.cross-target }}
+      - uses: actions/cache@v4
+        if: startsWith(matrix.os, 'windows') != true
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: test-${{ matrix.name }}-${{ matrix.cross-target }}
+
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.cross-target }}
+
+      - name: Install cargo-nice-plug
+        run: cargo install cargo-nice-plug --version 0.1.1 --locked
+
+      - name: Install macOS universal build targets
+        if: matrix.name == 'macos-universal'
+        run: rustup target add x86_64-apple-darwin aarch64-apple-darwin
+      - name: Package seiche
+        run: |
+          runner_name=${{ matrix.name }}
+          if [[ $runner_name = 'macos-universal' ]]; then
+            export MACOSX_DEPLOYMENT_TARGET=10.13
+            cargo nice-plug bundle-universal seiche --release
+          else
+            target_args=()
+            cross_target=${{ matrix.cross-target }}
+            if [[ -n $cross_target ]]; then
+              target_args+=("--target" "$cross_target")
+            fi
+
+            cargo nice-plug bundle seiche "${target_args[@]}" --release
+          fi
