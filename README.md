@@ -1,6 +1,7 @@
 # Seiche
-
-![Seiche plugin UI](plugin.png)
+<p align="center">
+<img width="400" src="plugin.png" alt="Seiche plugin UI">
+</p>
 
 ## Overview
 
